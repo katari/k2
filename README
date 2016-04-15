@@ -1,0 +1,60 @@
+Scope: web apps or rest services.
+
+ApplicationLauncher
+
+Application:
+
+  Reqs:
+
+   - Embedded jetty.
+   - Easy to test.
+   - Easy to configure.
+
+
+Module : abstract, so it does not need a basic implementation?
+
+ - Reqs:
+
+  1- Spring beans
+  2- Private and shared beans. Shared beans do not bring its dependencies.
+  3- A module is a spring config file?
+
+
+ - storage
+ - name
+ - namespace
+
+
+
+Or just a 'init' with a registry 
+
+
+
+How to create a basic app:
+---
+
+public class SampleLauncher {
+
+  /** The executor.
+   * @param args the command line arguments.
+   */
+  public static void main(final String[] args) {
+    new SampleApplication().run(args);
+  }
+}
+
+public class SampleApplication extends K2Application {
+
+  public SampleApplication() {
+    super(
+        // HibernateModule.class,
+        SitemeshModule.class,
+        MenuModule.class,
+        TimeModule.class,
+        UserModule.class
+    );
+  }
+}
+
+
+
