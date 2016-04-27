@@ -2,7 +2,6 @@
 
 package com.k2.core;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +13,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import org.apache.commons.lang3.Validate;
 
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.ExitCodeGenerator;
@@ -29,40 +29,45 @@ import org.springframework.web.context.support
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support
     .PropertySourcesPlaceholderConfigurer;
 
-/** A k2 application.
+/**A k2 application.
  *
  * A k2 application wraps a spring boot application, that itself wraps a spring
  * application context. K2 creates a hierarchy of application contexts with
  * spring boot application context at its root. Each module configures its own
- * application context that has the root as its parent. K2 also creates a
- * spring DispatcherServet whose application context parent is the module's
- * application context. So, for each dispatcher servlet you have:
+ * application context that has the root as its parent. In a web environment, K2
+ * also creates a spring DispatcherServet whose application context parent is
+ * the module's application context. So, for each module you have:
  *
  * Root context <-- module context <-- servlet context.
  *
- * The module life cycle:
+ * Module writers may optionally implement two interfaces: Registrator and
+ * RegistryFactory. A registrator is a module that uses other modules registries
+ * to register something into that module. K2 calss Registrator.addRegistrations
+ * on each module that implement Registrator before creating the spring
+ * application context of each module.
  *
- * A module goes through three steps in their life:
+ * The counterpart of Registrator is the RegistryFactory. Modules that implement
+ * RegistryFactory provides registries for modules that implement Registrator.
+ * K2 Hibernate module is a sample of a RegistryFactory.
  *
- * 1- Module registration. This step creates the module registry with the
- * module configuration api.
- *
- * 2- Module initialization. Instantiates module classes and invokes init on
- * each module.
- *
- * 3- Module creation. Creates the application context for each module and
- * wires their respective spring beans.
+ * To register a module, application writers must create an instance of each
+ * module and call the application contructor.
  */
 public class Application {
 
   /** The class logger. */
   private final Logger log = LoggerFactory.getLogger(Application.class);
 
-  /** The list of modules added to this application, never null.*/
-  private final List<Class<?>> moduleClasses;
+  /** The module definitions off all modules initialized in this application.
+   *
+   * This is never null.
+   */
+  private Map<Class<?>, ModuleDefinition> modules
+      = new LinkedHashMap<Class<?>, ModuleDefinition>();
 
   /** The spring boot application, null if not yet created.
    *
@@ -82,21 +87,17 @@ public class Application {
    */
   private ConfigurableApplicationContext applicationContext;
 
-  /** The module definitions off all modules initialized in this application.
-   *
-   * This is never null.
-   */
-  private Map<Class<?>, ModuleDefinition> modules
-      = new LinkedHashMap<Class<?>, ModuleDefinition>();
-
   /** Creates a new Application with the given modules.
    *
-   * @param modules the list of modules to bootstrap, cannot be null.
+   * @param moduleInstances the list of modules to bootstrap, cannot be null.
    */
   @SafeVarargs
-  protected Application(final Class<?> ... modules) {
+  protected Application(final Object ... moduleInstances) {
     Validate.notNull(modules, "The modules cannot be null");
-    moduleClasses = Arrays.asList(modules);
+    for (Object moduleInstance : moduleInstances) {
+      modules.put(moduleInstance.getClass(),
+          new ModuleDefinition(moduleInstance));
+    }
 
     if (!SLF4JBridgeHandler.isInstalled()) {
       SLF4JBridgeHandler.removeHandlersForRootLogger();
@@ -177,23 +178,15 @@ public class Application {
     return applicationContext.getBean(beanName);
   }
 
-  /** Obtains the configuration api for each module that implements.
-   */
-  private void initializeModules() {
-    for (Class<?> moduleClass : moduleClasses) {
-      modules.put(moduleClass, new ModuleDefinition(moduleClass));
-    }
-  }
-
-  /** Calls init on all modules that implement Module.
+  /** Calls addRegistrations on all modules that implement Registrator.
    */
   private void registerModules() {
     for (ModuleDefinition definition : modules.values()) {
-      Registrator module = definition.getModuleInitializer();
-      if (module != null) {
+      Registrator registrator = definition.getModuleRegistator();
+      if (registrator != null) {
         ModuleContext moduleContext;
         moduleContext = new ModuleContext(definition, modules.values());
-        module.addRegistrations(moduleContext);
+        registrator.addRegistrations(moduleContext);
       }
     }
   }
@@ -210,7 +203,6 @@ public class Application {
     if (application == null) {
       log.debug("Creating new k2 application");
 
-      initializeModules();
       registerModules();
 
       List<Class<?>> applicationConfigurations = new LinkedList<Class<?>>();
@@ -236,15 +228,20 @@ public class Application {
         }
       });
 
-      // Adds a listener that refreshes all the module contexts.
+      // Adds a listener that refreshes all the module contexts and exposes
+      // the public beans.
       application.addListeners(
           new ApplicationListener<ContextRefreshedEvent>() {
         /** {@inheritDoc} */
         @Override
         public void onApplicationEvent(final ContextRefreshedEvent event) {
           if (event.getApplicationContext().getParent() == null) {
+            ConfigurableListableBeanFactory parentBeanFactory =
+                ((AbstractApplicationContext)
+                event.getApplicationContext()).getBeanFactory();
             for (ModuleDefinition definition : modules.values()) {
               definition.getContext().refresh();
+              definition.exportPublicBeans(parentBeanFactory);
             }
           }
         }
@@ -258,16 +255,20 @@ public class Application {
   /** Registers the module.
    *
    * This creates a spring application context with the module beans, exposes
-   * the public beans and creates a dispatcher servlet.
+   * the public beans and creates a dispatcher servlet in a web environment.
    *
    * @param context the global application context. It cannot be null.
    *
-   * @param moduleClass the module to register. It cannot be null.
+   * @param definition the definition of the module to register. It cannot be
+   * null.
    */
   private void createModule(final ConfigurableApplicationContext context,
       final ModuleDefinition definition) {
 
-    log.trace("Entering registerModule {}", definition.getModuleName());
+    log.trace("Entering createModule {}", definition.getModuleName());
+
+    Validate.notNull(context, "The parent context cannot be null.");
+    Validate.notNull(definition, "The module definiton cannot be null.");
 
     String moduleName = definition.getModuleName();
 
@@ -275,14 +276,12 @@ public class Application {
     AnnotationConfigWebApplicationContext moduleContext;
     moduleContext = definition.getContext();
     moduleContext.setParent(context);
-    moduleContext.addBeanFactoryPostProcessor(
-        new ModuleBeansPublisher(context, moduleName, definition));
 
-    if (this.isWebEnvironment) {
+    if (isWebEnvironment) {
       registerDispatcherServlet(context, moduleName, moduleContext);
     }
 
-    log.trace("Leaving registerModule");
+    log.trace("Leaving createModule");
   }
 
   /** Creates a spring dispatcher servlet and registers it in the provided
@@ -307,11 +306,11 @@ public class Application {
     Validate.notNull(moduleContext, "The module context cannot be null.");
 
     // Create a new application context for the dispatcher servlet and
-    // initialze its parent. The dispatcher will do its magic on the context and
-    // call refresh.
+    // set the module context as its parent. The dispatcher servlet will do its
+    // magic on the context and call refresh.
     AnnotationConfigWebApplicationContext servletContext;
     servletContext = new AnnotationConfigWebApplicationContext();
-    servletContext.register(DispatcherServletContext.class);
+    servletContext.register(DispatcherServletConfiguration.class);
     servletContext.setParent(moduleContext);
 
     DispatcherServlet dispatcherServlet;

@@ -46,7 +46,7 @@ public class ModuleContext {
    * @return an implementation of the provided type, or null if none found.
    */
   @SuppressWarnings("unchecked")
-  <T> T get(final Class<T> registryType) {
+  public <T> T get(final Class<T> registryType) {
 
     T registry = (T) registries.get(registryType);
 

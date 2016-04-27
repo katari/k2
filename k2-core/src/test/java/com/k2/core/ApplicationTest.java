@@ -3,6 +3,7 @@
 package com.k2.core;
 
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -152,11 +153,14 @@ public class ApplicationTest {
   @Component("testmodule")
   public static class Module1 implements RegistryFactory {
 
-    @SuppressWarnings("unchecked")
+    private List<Module1Configurer> configurers = new LinkedList<>();
+
     @Override
     public Module1Configurer getRegistry(
         final ModuleDefinition requestor) {
-      return new Module1Configurer(requestor);
+      Module1Configurer configurer = new Module1Configurer(requestor);
+      configurers.add(configurer);
+      return configurer;
     }
 
     @Bean public StringHolder testBean() {
@@ -172,8 +176,7 @@ public class ApplicationTest {
       return new StringHolder("Module 1 renamed exposed bean");
     }
 
-    @Bean public String configuration(
-        final List<Module1Configurer> configurers) {
+    @Bean public String configuration() {
       String result = "";
       for (Module1Configurer configurer : configurers) {
         result += configurer.getOption() + "\n";
@@ -244,7 +247,7 @@ public class ApplicationTest {
   public static class TestApplication extends Application {
 
     public TestApplication() {
-      super(Module1.class, Module2.class, Module3.class);
+      super(new Module1(), new Module2(), new Module3());
     }
 
     public static void main(final String ... args) {

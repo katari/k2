@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
  * {@see Application#setWebEnvironment(boolean)}.
  */
 @Configuration
-public class DispatcherServletContext extends WebMvcConfigurationSupport {
+public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
 
   /** Defines a handler mapping to look for handlers in the current
    * application context and its parent.

@@ -16,6 +16,6 @@ public interface RegistryFactory {
    *
    * @return a registry for the provided module, never null.
    */
-  <T> T getRegistry(final ModuleDefinition requestor);
+  Object getRegistry(final ModuleDefinition requestor);
 }
 
