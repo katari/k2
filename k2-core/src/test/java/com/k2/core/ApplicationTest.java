@@ -97,8 +97,6 @@ public class ApplicationTest {
         is(not(nullValue())));
   }
 
-  // A test application with two test modules.
-
   @Test public void module2Controller() throws Exception {
     String endpoint = "http://localhost:8081/applicationTest.Module2/hi.html";
     try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
@@ -244,6 +242,7 @@ public class ApplicationTest {
     }
   }
 
+  // A test application with 3 test modules.
   public static class TestApplication extends Application {
 
     public TestApplication() {
