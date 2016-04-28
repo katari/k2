@@ -4,7 +4,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.k2</groupId>
+  <groupId>com.github.katari</groupId>
   <artifactId>k2</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -48,7 +48,7 @@
       <!-- K2 related dependencies. -->
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
       <dependency>
-        <groupId>com.k2</groupId>
+        <groupId>com.github.katari</groupId>
         <artifactId>k2-core</artifactId>
         <version>${project.version}</version>
         <exclusions>
