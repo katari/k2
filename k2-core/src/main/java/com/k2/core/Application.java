@@ -2,10 +2,12 @@
 
 package com.k2.core;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +44,7 @@ import org.springframework.context.support
  * also creates a spring DispatcherServet whose application context parent is
  * the module's application context. So, for each module you have:
  *
- * Root context <-- module context <-- servlet context.
+ * Root context --- module context --- servlet context.
  *
  * Module writers may optionally implement two interfaces: Registrator and
  * RegistryFactory. A registrator is a module that uses other modules registries
@@ -203,6 +205,8 @@ public class Application {
     if (application == null) {
       log.debug("Creating new k2 application");
 
+      SpringApplication app;
+
       registerModules();
 
       List<Class<?>> applicationConfigurations = new LinkedList<Class<?>>();
@@ -210,27 +214,15 @@ public class Application {
         applicationConfigurations.add(WebConfiguration.class);
       }
       applicationConfigurations.add(getClass());
-      application = new SpringApplication(applicationConfigurations.toArray());
-      application.setBannerMode(Banner.Mode.OFF);
-      application.setWebEnvironment(isWebEnvironment);
+      app = new SpringApplication(applicationConfigurations.toArray());
+      app.setBannerMode(Banner.Mode.OFF);
+      app.setWebEnvironment(isWebEnvironment);
 
-      // Adds an initializer that registers the modules in the spring boot
-      // application.
-      application.addInitializers(
-        new ApplicationContextInitializer<ConfigurableApplicationContext>() {
-        /** {@inheritDoc} */
-        @Override
-        public void initialize(
-            final ConfigurableApplicationContext parentContext) {
-          for (ModuleDefinition moduleDefinition : modules.values()) {
-            createModule(parentContext, moduleDefinition);
-          }
-        }
-      });
+      configureInitializers(app);
 
       // Adds a listener that refreshes all the module contexts and exposes
       // the public beans.
-      application.addListeners(
+      app.addListeners(
           new ApplicationListener<ContextRefreshedEvent>() {
         /** {@inheritDoc} */
         @Override
@@ -247,9 +239,57 @@ public class Application {
         }
       });
 
+      application = app;
     }
     log.trace("Leaving getApplication");
     return application;
+  }
+
+  /** Configures the spring boot application initializers that create the
+   * K2Environment and initialize the module application contexts.
+   *
+   * The K2 application needs to configure the environment in the first
+   * initialization step, then let spring boot run its own initializer, and
+   * finally run the initializer that creates the module contexts.
+   *
+   * @param app the spring boot application context, never null.
+   */
+  private void configureInitializers(final SpringApplication app) {
+    Validate.notNull(app, "The spring boot application cannot be null");
+
+    // Caches the default spring boot initializers.
+    Set<ApplicationContextInitializer<?>> initializers= app.getInitializers();
+
+    // Clears all the configured initializers.
+    app.setInitializers(
+        Collections.<ApplicationContextInitializer<?>> emptyList());
+
+    // Add the environment initializer.
+    app.addInitializers(
+      new ApplicationContextInitializer<ConfigurableApplicationContext>() {
+      /** {@inheritDoc} */
+      @Override
+      public void initialize(final ConfigurableApplicationContext parent) {
+        parent.setEnvironment(new K2Environment(parent.getEnvironment()));
+      }
+    });
+
+    // Adds the default spring boot initializers.
+    app.addInitializers(
+        initializers.toArray(new ApplicationContextInitializer[0]));
+
+    // Adds an initializer that registers the modules in the spring boot
+    // application.
+    app.addInitializers(
+      new ApplicationContextInitializer<ConfigurableApplicationContext>() {
+      /** {@inheritDoc} */
+      @Override
+      public void initialize(final ConfigurableApplicationContext parent) {
+        for (ModuleDefinition moduleDefinition : modules.values()) {
+          createModule(parent, moduleDefinition);
+        }
+      }
+    });
   }
 
   /** Registers the module.

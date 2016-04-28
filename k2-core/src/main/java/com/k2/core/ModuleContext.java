@@ -23,6 +23,13 @@ public class ModuleContext {
    */
   private Collection<ModuleDefinition> modules;
 
+  /** A cache of the registries requested by the modules.
+   *
+   * K2 guarantees that a module is not asked more that once for a registry for
+   * a specific requestor.
+   *
+   * This is never null.
+   */
   private Map<Class<?>, Object> registries = new LinkedHashMap<>();
 
   /** Constructor, creates a module context for a specific module.

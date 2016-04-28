@@ -21,9 +21,11 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.CglibSubclassingInstantiationStrategy;
+import org.springframework.beans.factory.support
+    .CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
@@ -158,6 +160,16 @@ public class ModuleDefinition {
     return null;
   }
 
+  /** A synthetic class to introduce the EnableConfigurationProperties
+   * annotation in the module.
+   *
+   * @EnableConfigurationProperties simply imports
+   * EnableConfigurationPropertiesImportSelector in the application context,
+   * but that class is package access, so I cannot not add it directly.
+   */
+  @EnableConfigurationProperties
+  private static class AnnotationHolder {};
+
   /** Returns the application context initialized from the module instance.
    *
    * The returned context is not properly initialized. The k2 application
@@ -188,6 +200,8 @@ public class ModuleDefinition {
           super.loadBeanDefinitions(beanFactory);
         }
       };
+      context.setEnvironment(new K2Environment(context.getEnvironment()));
+      context.register(AnnotationHolder.class);
       context.register(moduleInstance.getClass());
       context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
 
