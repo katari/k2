@@ -47,6 +47,9 @@ import com.k2.core.Public;
  *
  * to let Hibernate manage your persistent classes. See HibernateRegistry for
  * more information.
+ *
+ * This module will read all the properties that start with 'hibernate.' and
+ * use them to configure the session factory.
  */
 @Component("hibernate")
 @PropertySource("classpath:/com/k2/hibernate/hibernate.properties")
@@ -85,6 +88,9 @@ public class Hibernate implements RegistryFactory {
 
   /** Hibernate SessionFactory.
    *
+   * @param environment the enviromnment provided by k2 core, used by hibernate
+   * to obtain its properties.
+   *
    * @param dataSource the data source, never null.
    *
    * @return the Hibernate's SessionFactory, never returns null.
@@ -119,7 +125,6 @@ public class Hibernate implements RegistryFactory {
     for (PersistentClass pc : metadata.getEntityBindings()) {
       String prefix = prefixes.get(pc.getMappedClass());
       pc.getTable().setName(prefix + "_" + pc.getTable().getName());
-      HibernateTuplizer.registries = registries;
       pc.addTuplizer(EntityMode.POJO, HibernateTuplizer.class.getName());
 
       MetaAttribute attribute = new MetaAttribute("k2.moduleContext");

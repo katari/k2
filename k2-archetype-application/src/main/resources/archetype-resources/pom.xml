@@ -15,7 +15,7 @@
     <dependencies>
       <dependency>
         <groupId>com.github.katari</groupId>
-        <artifactId>k2</artifactId>
+        <artifactId>k2-parent</artifactId>
         <version>${k2.version}</version>
         <type>pom</type>
         <scope>import</scope>
@@ -24,6 +24,48 @@
   </dependencyManagement>
 
   <build>
+    <plugins>
+
+      <!-- Checkstyle, very strict on sources, including javadocs, a little bit
+           relaxed on tests, specially on javadocs. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.17</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.github.katari</groupId>
+            <artifactId>k2-build-tools</artifactId>
+            <version>${k2.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <!-- Fails build if checkstyle fails. -->
+          <execution>
+            <id>check</id>
+            <phase>process-sources</phase>
+            <goals><goal>check</goal></goals>
+
+            <configuration>
+              <configLocation>com/k2/checkstyle.xml</configLocation>
+              <suppressionsLocation>
+                com/k2/test-suppressions.xml
+              </suppressionsLocation>
+              <suppressionsFileExpression>
+                checkstyle.suppressions.file
+              </suppressionsFileExpression>
+
+              <includeTestSourceDirectory>true</includeTestSourceDirectory>
+              <encoding>UTF-8</encoding>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+              <linkXRef>false</linkXRef>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
     <pluginManagement>
       <plugins>
 

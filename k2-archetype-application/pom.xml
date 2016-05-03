@@ -1,20 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
   http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+  <!-- The application archetype pom. -->
+
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>com.github.katari</groupId>
-    <artifactId>k2</artifactId>
+    <artifactId>k2-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
+    <relativePath>../k2-parent/pom.xml</relativePath>
   </parent>
 
   <groupId>com.github.katari</groupId>
   <artifactId>k2-archetype-application</artifactId>
-  <version>0.1-SNAPSHOT</version>
   <packaging>maven-archetype</packaging>
+
+  <name>K2 application archetype</name>
 
   <build>
     <extensions>

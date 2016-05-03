@@ -13,8 +13,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-
+import org.springframework.boot.context.embedded
+  .EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty
   .JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
@@ -33,14 +33,20 @@ public class WebConfiguration {
    *
    * This bean creates and configures a jetty embedded server.
    *
+   * @param port the port that jetty will listen on.
+   *
+   * @param serverCustomizer a the server customizer that configures specific
+   * options in jetty. See serverCustomizer(...). It cannot be null.
+   *
    * @return the factory, never null.
    */
   @Bean public EmbeddedServletContainerFactory servletContainer(
-      @Value("${server.port:8081}") final String port,
+      @Value("${server.port:8081}") final int port,
       final JettyServerCustomizer serverCustomizer) {
 
     JettyEmbeddedServletContainerFactory factory =
-        new JettyEmbeddedServletContainerFactory("", Integer.valueOf(port));
+        new JettyEmbeddedServletContainerFactory("", port);
+    //Integer.valueOf(port));
     factory.addServerCustomizers(serverCustomizer);
     factory.addServerCustomizers(forwardedRequestCustomizer());
 

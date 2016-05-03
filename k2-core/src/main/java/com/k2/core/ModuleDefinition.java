@@ -25,7 +25,8 @@ import org.springframework.beans.factory.support
     .CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties
+    .EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
@@ -63,7 +64,7 @@ public class ModuleDefinition {
    *
    * This is used by the k2 application to export this module public beans.
    */
-  List<String> publicBeanNames = new LinkedList<String>();
+  private List<String> publicBeanNames = new LinkedList<String>();
 
   /** Constructor, creates a new module definition.
    *
@@ -104,6 +105,8 @@ public class ModuleDefinition {
 
   /** Obtains a bean of the specified type from the application context of this
    * module.
+   *
+   * @param <T> the type of bean to return.
    *
    * @param type the type of bean to obtain. It cannot be null.
    *
@@ -163,7 +166,7 @@ public class ModuleDefinition {
   /** A synthetic class to introduce the EnableConfigurationProperties
    * annotation in the module.
    *
-   * @EnableConfigurationProperties simply imports
+   * EnableConfigurationProperties simply imports
    * EnableConfigurationPropertiesImportSelector in the application context,
    * but that class is package access, so I cannot not add it directly.
    */
@@ -259,7 +262,8 @@ public class ModuleDefinition {
    * @param beanRegistry the bean registry that contains all the bean
    * definitions.
    */
-  private void recordPublicBeanNames(final BeanDefinitionRegistry beanRegistry) {
+  private void recordPublicBeanNames(
+      final BeanDefinitionRegistry beanRegistry) {
     List<String> publicBeanMethodNames;
     publicBeanMethodNames = getPublicBeanMethodNames();
     for (String beanName : beanRegistry.getBeanDefinitionNames()) {

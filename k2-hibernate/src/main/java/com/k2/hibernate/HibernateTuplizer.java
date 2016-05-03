@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.util.ReflectionUtils;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.bytecode.spi.ReflectionOptimizer;
 import org.hibernate.bytecode.spi.ReflectionOptimizer.InstantiationOptimizer;
 import org.hibernate.mapping.PersistentClass;
@@ -31,7 +32,7 @@ public class HibernateTuplizer extends PojoEntityTuplizer {
   /** The list of registries with the entity classes and factories provided
    * by other modules, never null.
    */
-  public static List<HibernateRegistry> registries;
+  private List<HibernateRegistry> registries;
 
   /** A copy of the reflection optimizer obtained from the parent class, via
    * reflection, null if it is null in the parent class.
@@ -40,7 +41,11 @@ public class HibernateTuplizer extends PojoEntityTuplizer {
 
   /** Constructor, creates a hibernate tuplizer.
    *
-   * {@inheritDoc}
+   * @param entityMetamodel the entity metamodel as passed by hibernate, never
+   * null.
+   *
+   * @param mappedEntity the persistent class to instantian, as passed by
+   * hibernate. This is never null.
    */
   public HibernateTuplizer(final EntityMetamodel entityMetamodel,
       final PersistentClass mappedEntity) {
@@ -65,7 +70,7 @@ public class HibernateTuplizer extends PojoEntityTuplizer {
     if (reflectionOptimizer != null) {
       optimizer = reflectionOptimizer.getInstantiationOptimizer();
     }
-    return new Instantiator(metamodel, persistentClass, optimizer);
+    return new Instantiator(this, metamodel, persistentClass, optimizer);
   }
 
   /** An instantiator implementation that delegates to the module provided
@@ -74,17 +79,34 @@ public class HibernateTuplizer extends PojoEntityTuplizer {
   @SuppressWarnings("serial")
   public static class Instantiator extends PojoEntityInstantiator {
 
+    /** The hibernate tuplizer, never null. */
+    private HibernateTuplizer tuplizer;
+
     /** The persistent class to instantiate, never null. */
-    PersistentClass persistentClass;
+    private PersistentClass persistentClass;
 
     /** Constructor, creates an instance of the instantiator.
      *
-     * {@inheritDoc}
+     * @param theTuplizer the hibernate tuplizer. This instantiator looks
+     * in the registries provided by this tuplizer for the factory to create
+     * new instances of the persistent class. This is never null.
+     *
+     * @param entityMetamodel the entity metamodel, as pass to the tuplizer by
+     * hibernate. It is never null.
+     *
+     * @param thePersistentClass the class to instantiate, as pass to the
+     * tuplizer by hibernate. It is never null.
+     *
+     * @param optimizer the instantiator optimizer, obtained from the
+     * reflectionOptimizer. Null if none provided by the reflection optimizer.
      */
-    public Instantiator(final EntityMetamodel entityMetamodel,
+    public Instantiator(final HibernateTuplizer theTuplizer,
+        final EntityMetamodel entityMetamodel,
         final PersistentClass thePersistentClass,
         final InstantiationOptimizer optimizer) {
       super(entityMetamodel, thePersistentClass, optimizer);
+      Validate.notNull(theTuplizer, "The tuplizer cannot be null");
+      tuplizer = theTuplizer;
       persistentClass = thePersistentClass;
     }
 
@@ -99,7 +121,7 @@ public class HibernateTuplizer extends PojoEntityTuplizer {
     @Override
     public Object instantiate() {
       Object factory = null;
-      for (HibernateRegistry registry : registries) {
+      for (HibernateRegistry registry : tuplizer.registries) {
         factory = registry.getFactoryFor(persistentClass.getMappedClass());
         if (factory != null) {
           Method create = ReflectionUtils.findMethod(

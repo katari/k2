@@ -48,6 +48,8 @@ public class ModuleContext {
 
   /** Obtains a registry of a specific type.
    *
+   * @param <T> the type of the registry to return.
+   *
    * @param registryType the type of registry to find.
    *
    * @return an implementation of the provided type, or null if none found.

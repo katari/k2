@@ -5,11 +5,7 @@
 
 package ${package}app;
 
-import java.util.List;
-import java.util.LinkedList;
-
 import com.k2.core.Application;
-import com.k2.core.Registrator;
 
 import ${package}.${classPrefix};
 
