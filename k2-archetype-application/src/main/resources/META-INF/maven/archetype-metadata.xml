@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archetype-descriptor name="k2-application">
+
+  <requiredProperties>
+    <requiredProperty key="package"/>
+    <requiredProperty key="classPrefix"/>
+    <requiredProperty key="k2Version">
+      <defaultValue>${project.version}</defaultValue>
+    </requiredProperty>
+  </requiredProperties>
+
+  <fileSets>
+    <fileSet filtered="true" packaged="false">
+      <directory></directory>
+      <includes>
+        <include>README.md</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+
+  <modules>
+    <module name="\${rootArtifactId}-app" id="\${rootArtifactId}-app"
+      dir="__rootArtifactId__-app">
+      <fileSets>
+        <fileSet filtered="true" packaged="false" encoding="UTF-8">
+          <directory>src/main/java</directory>
+          <includes>
+            <include>**/*.java</include>
+          </includes>
+        </fileSet>
+        <!-- fileSet filtered="true" encoding="UTF-8">
+          <directory>src/main/resources</directory>
+          <includes>
+            <include>**/*.*</include>
+          </includes>
+        </fileSet -->
+        <fileSet filtered="true" packaged="false" encoding="UTF-8">
+          <directory>src/test/java</directory>
+          <includes>
+            <include>**/*.java</include>
+          </includes>
+        </fileSet>
+        <fileSet filtered="true" encoding="UTF-8">
+          <directory>src/test/resources</directory>
+          <includes>
+            <include>**/*.*</include>
+          </includes>
+        </fileSet>
+      </fileSets>
+    </module>
+
+    <module name="\${rootArtifactId}" id="\${rootArtifactId}"
+      dir="__rootArtifactId__">
+      <fileSets>
+        <fileSet filtered="true" packaged="false" encoding="UTF-8">
+          <directory>src/main/java</directory>
+          <includes>
+            <include>**/*.java</include>
+          </includes>
+        </fileSet>
+        <!-- fileSet filtered="true" encoding="UTF-8">
+          <directory>src/main/resources</directory>
+          <includes>
+            <include>**/*.*</include>
+          </includes>
+        </fileSet -->
+        <fileSet filtered="true" packaged="false" encoding="UTF-8">
+          <directory>src/test/java</directory>
+          <includes>
+            <include>**/*.java</include>
+          </includes>
+        </fileSet>
+        <fileSet filtered="true" encoding="UTF-8">
+          <directory>src/test/resources</directory>
+          <includes>
+            <include>**/*.*</include>
+          </includes>
+        </fileSet>
+      </fileSets>
+    </module>
+  </modules>
+  <!-- vim: set ts=2 et sw=2 ai: -->
+
+</archetype-descriptor>
+

@@ -1,7 +1,7 @@
 # K2, a spring based modular application framework.
 
 With K2 it is easy to write maintainable, production-grade, modular spring
-based application. You can write web apps, rest services or simple stand alone
+based applications. You can write web apps, rest services or simple stand alone
 applications.
 
 In K2 there are two main concepts: application and module. An application

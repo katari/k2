@@ -2,12 +2,10 @@
 
 package com.k2.core;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,6 @@ import org.springframework.web.context.support
     .AnnotationConfigWebApplicationContext;
 
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support
@@ -257,17 +254,14 @@ public class Application {
   private void configureInitializers(final SpringApplication app) {
     Validate.notNull(app, "The spring boot application cannot be null");
 
-    // Caches the default spring boot initializers.
-    Set<ApplicationContextInitializer<?>> initializers= app.getInitializers();
-
-    // Clears all the configured initializers.
-    app.setInitializers(
-        Collections.<ApplicationContextInitializer<?>> emptyList());
+    List<ApplicationContextInitializer<?>> initializers = new LinkedList<>();
 
     // Add the environment initializer.
-    app.addInitializers(
+    initializers.add(
       new ApplicationContextInitializer<ConfigurableApplicationContext>() {
-      /** {@inheritDoc} */
+      /** {@inheritDoc}
+       *
+       * Creates the K2Environment and puts it in the application context. */
       @Override
       public void initialize(final ConfigurableApplicationContext parent) {
         parent.setEnvironment(new K2Environment(parent.getEnvironment()));
@@ -275,21 +269,30 @@ public class Application {
     });
 
     // Adds the default spring boot initializers.
-    app.addInitializers(
-        initializers.toArray(new ApplicationContextInitializer[0]));
+    initializers.addAll(app.getInitializers());
 
     // Adds an initializer that registers the modules in the spring boot
     // application.
-    app.addInitializers(
+    initializers.add(
       new ApplicationContextInitializer<ConfigurableApplicationContext>() {
-      /** {@inheritDoc} */
+      /** {@inheritDoc}
+       *
+       *  Creates the spring application context for each module. */
       @Override
       public void initialize(final ConfigurableApplicationContext parent) {
+        // Add the post processor to support @Value in the spring
+        // configuration.
+        parent.addBeanFactoryPostProcessor(
+          new PropertySourcesPlaceholderConfigurer());
+
+        // Add the application context for each module.
         for (ModuleDefinition moduleDefinition : modules.values()) {
           createModule(parent, moduleDefinition);
         }
       }
     });
+
+    app.setInitializers(initializers);
   }
 
   /** Registers the module.
@@ -365,18 +368,6 @@ public class Application {
 
     BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context;
     registry.registerBeanDefinition(moduleName, builder.getBeanDefinition());
-  }
-
-  /** Bean factory post processor to support @Value in spring beans.
-   *
-   * This lets modules use @Value in their global bean configuration.
-   *
-   * @return a post processor that can interpret @Value annotations,
-   * never null.
-   */
-  @Bean public PropertySourcesPlaceholderConfigurer
-      propertySourcesPlaceholderConfigurer() {
-    return new PropertySourcesPlaceholderConfigurer();
   }
 }
 

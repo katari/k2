@@ -48,6 +48,14 @@ public class ApplicationTest {
     application.stop();
   }
 
+  @Test public void emptyApplication() {
+    application.stop();
+    Application emptyApplication = new EmptyApplication();
+    emptyApplication.run(new String[0]);
+    assertThat(emptyApplication.getApplication(), is(not(nullValue())));
+    emptyApplication.stop();
+  }
+
   @Test public void getApplication_beforeRun() {
     Application nonRunningApp = new TestApplication();
     assertThat(nonRunningApp.getApplication(), is(not(nullValue())));
@@ -257,6 +265,10 @@ public class ApplicationTest {
     @Bean public String globalBean() {
       return "Global bean";
     }
+  }
+
+  // A test application with no modules.
+  public static class EmptyApplication extends Application {
   }
 }
 

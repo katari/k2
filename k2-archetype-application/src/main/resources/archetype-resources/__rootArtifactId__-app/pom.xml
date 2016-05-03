@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+  http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <!-- The main application pom -->
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>${groupId}</groupId>
+    <artifactId>${rootArtifactId}-parent</artifactId>
+    <version>${version}</version>
+  </parent>
+
+  <groupId>${groupId}</groupId>
+  <artifactId>${artifactId}</artifactId>
+  <version>${version}</version>
+  <packaging>jar</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.github.katari</groupId>
+      <artifactId>k2-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>${groupId}</groupId>
+      <artifactId>${rootArtifactId}</artifactId>
+      <version>${version}</version>
+    </dependency>
+
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Test dependencies -->
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>repackage</id>
+            <goals><goal>repackage</goal></goals>
+            <phase>pre-integration-test</phase>
+            <configuration><classifier>boot</classifier></configuration>
+          </execution>
+        </executions>
+
+        <configuration>
+          <!-- This configures the plugin when invoked from the command line.
+                 -->
+          <mainClass>${package}app.${classPrefix}Launcher</mainClass>
+          <!-- mainClass>com.avenida.marketplace.MarketplaceLauncher</mainClass  -->
+          <!-- Removes target repeated files which is extremely annoying in dev. -->
+          <!-- This explains why the module information is not shown correctly. -->
+          <!-- <addResources>false</addResources> -->
+          <folders>
+            <folder>${rootArtifactId}-app/target/test-classes</folder>
+          </folders>
+          <useTestClasspath>true</useTestClasspath>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- vim: set ts=2 et sw=2 ai: -->
+
+</project>
+
