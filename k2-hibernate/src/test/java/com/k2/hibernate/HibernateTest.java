@@ -5,15 +5,9 @@ package com.k2.hibernate;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Order;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.After;
@@ -22,9 +16,6 @@ import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +27,16 @@ import com.k2.core.Application;
 import com.k2.core.ModuleContext;
 import com.k2.core.Public;
 import com.k2.core.Registrator;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Order;
 
 public class HibernateTest {
 

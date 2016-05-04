@@ -21,6 +21,7 @@
     <module>k2-core</module>
     <module>k2-hibernate</module>
     <module>k2-archetype-application</module>
+    <module>k2-archetype-module</module>
     <module>k2-build-tools</module>
   </modules>
 

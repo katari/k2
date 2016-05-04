@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration debug="false" scan="false">
+
+  <property name="LOG_FILE" value="target/log/test.log" />
+  <property name="LAUNCHER_CLASS" value="com.k2.SampleLauncher" />
+
+  <include resource="com/k2/core/logback/base.xml" />
+
+  <!-- Logs to the console when the application starts. -->
+  <logger name="com.k2" additivity="false" level="TRACE">
+    <appender-ref ref='FILE' />
+  </logger>
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE_ERRORS" />
+    <appender-ref ref="FILE" />
+  </root>
+
+  <!-- vim: set ts=2 et sw=2 ai: -->
+</configuration>
+

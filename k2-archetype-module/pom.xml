@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+  http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <!-- The module archetype pom. -->
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.github.katari</groupId>
+    <artifactId>k2-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>../k2-parent/pom.xml</relativePath>
+  </parent>
+
+  <groupId>com.github.katari</groupId>
+  <artifactId>k2-archetype-module</artifactId>
+  <packaging>maven-archetype</packaging>
+
+  <name>K2 module archetype</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.github.katari</groupId>
+      <artifactId>k2-archetype-application</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.archetype</groupId>
+        <artifactId>archetype-packaging</artifactId>
+        <version>2.4</version>
+      </extension>
+    </extensions>
+
+    <!-- Necessary to use the project version in the generated archetype.
+         -->
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>META-INF/maven/archetype-metadata.xml</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>META-INF/maven/archetype-metadata.xml</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>projects/basic/archetype.properties</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>projects/basic/archetype.properties</exclude>
+        </excludes>
+      </testResource>
+    </testResources>
+
+    <pluginManagement>
+      <plugins>
+
+        <plugin>
+          <artifactId>maven-archetype-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+
+        <!-- Necessary to use the project version in the generated archetype.
+             -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.5</version>
+          <configuration>
+            <escapeString>\</escapeString>
+          </configuration>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+
+  </build>
+
+  <!-- vim: set ts=2 et sw=2 ai: -->
+
+</project>
+

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+  http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <!-- The ${artifactId} module -->
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Set this to your correct parent pom!!! -->
+  <parent>
+    <groupId>k2.it</groupId>
+    <artifactId>itsample-parent</artifactId>
+    <version>2.1-SNAPSHOT</version>
+  </parent>
+
+  <groupId>${groupId}</groupId>
+  <artifactId>${artifactId}</artifactId>
+  <version>${version}</version>
+  <packaging>jar</packaging>
+
+  <name>${artifactId}</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.github.katari</groupId>
+      <artifactId>k2-core</artifactId>
+    </dependency>
+
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Test dependencies -->
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <!-- vim: set ts=2 et sw=2 ai: -->
+
+</project>
+
