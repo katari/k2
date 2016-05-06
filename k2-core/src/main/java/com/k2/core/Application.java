@@ -13,7 +13,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import org.apache.commons.lang3.Validate;
 
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.ExitCodeGenerator;
@@ -21,14 +20,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.Banner;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.support
     .AnnotationConfigWebApplicationContext;
 
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support
     .PropertySourcesPlaceholderConfigurer;
 
@@ -211,30 +207,27 @@ public class Application {
         applicationConfigurations.add(WebConfiguration.class);
       }
       applicationConfigurations.add(getClass());
-      app = new SpringApplication(applicationConfigurations.toArray());
+      app = new SpringApplication(applicationConfigurations.toArray()) {
+
+        /** {@inheritDoc}
+         *
+         * Overriden to change the type of application context to use,
+         * K2WebApplicationContext or K2ApplicationContext, depending on
+         * isWebEnvironment.
+         */
+        @Override
+        protected ConfigurableApplicationContext createApplicationContext() {
+          if (isWebEnvironment) {
+            return new K2WebApplicationContext(modules.values());
+          } else {
+            return new K2ApplicationContext(modules.values());
+          }
+        }
+      };
       app.setBannerMode(Banner.Mode.OFF);
       app.setWebEnvironment(isWebEnvironment);
 
       configureInitializers(app);
-
-      // Adds a listener that refreshes all the module contexts and exposes
-      // the public beans.
-      app.addListeners(
-          new ApplicationListener<ContextRefreshedEvent>() {
-        /** {@inheritDoc} */
-        @Override
-        public void onApplicationEvent(final ContextRefreshedEvent event) {
-          if (event.getApplicationContext().getParent() == null) {
-            ConfigurableListableBeanFactory parentBeanFactory =
-                ((AbstractApplicationContext)
-                event.getApplicationContext()).getBeanFactory();
-            for (ModuleDefinition definition : modules.values()) {
-              definition.getContext().refresh();
-              definition.exportPublicBeans(parentBeanFactory);
-            }
-          }
-        }
-      });
 
       application = app;
     }
@@ -297,8 +290,9 @@ public class Application {
 
   /** Registers the module.
    *
-   * This creates a spring application context with the module beans, exposes
-   * the public beans and creates a dispatcher servlet in a web environment.
+   * Creates a spring application context with the module beans and creates a
+   * dispatcher servlet in a web environment. This operation does not refresh
+   * the application context of any module.
    *
    * @param context the global application context. It cannot be null.
    *

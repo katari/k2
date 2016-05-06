@@ -2,10 +2,18 @@
 
 package com.k2.core;
 
-import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+
+import java.io.IOException;
+import java.net.URL;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,12 +28,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 public class ApplicationTest {
 
@@ -39,7 +50,7 @@ public class ApplicationTest {
   @Before public void setUp() {
     log.trace("Entering setUp");
     initCalled = false;
-    application = new TestApplication();
+    application = new WebApplication();
     application.run(new String[0]);
     log.trace("Leaving setUp");
   }
@@ -56,8 +67,18 @@ public class ApplicationTest {
     emptyApplication.stop();
   }
 
+  @Test public void standAloneApplication() {
+    application.stop();
+    Application standAloneApplication = new StandAloneApplication();
+    standAloneApplication.run(new String[0]);
+    assertThat(standAloneApplication.getApplication(), is(not(nullValue())));
+    assertThat(standAloneApplication.getBean(Module1.class, "testBean")
+        .toString(), is("Module 1 private bean"));
+    standAloneApplication.stop();
+  }
+
   @Test public void getApplication_beforeRun() {
-    Application nonRunningApp = new TestApplication();
+    Application nonRunningApp = new WebApplication();
     assertThat(nonRunningApp.getApplication(), is(not(nullValue())));
     nonRunningApp.stop();
   }
@@ -109,7 +130,7 @@ public class ApplicationTest {
     String endpoint = "http://localhost:8081/applicationTest.Module2/hi.html";
     try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
       scanner.useDelimiter("\\A");
-      assertThat(scanner.next(), is("Module 1 exposed bean"));
+      assertThat(scanner.next(), is("Module 1 exposed bean, 1, 2"));
     }
   }
 
@@ -206,6 +227,29 @@ public class ApplicationTest {
     }
   };
 
+  /* Filter that adds a suffix to the response. */
+  public static class SuffixFilter extends GenericFilterBean {
+
+    private String suffix;
+
+    SuffixFilter(final String theSuffix) {
+      suffix = theSuffix;
+    }
+
+    @Override
+    public void doFilter(final ServletRequest request,
+        final ServletResponse response,
+        final FilterChain chain) throws IOException, ServletException {
+
+      ContentCachingResponseWrapper buffer
+          = new ContentCachingResponseWrapper((HttpServletResponse) response);
+
+      chain.doFilter(request,  buffer);
+      buffer.getOutputStream().print(suffix);
+      buffer.copyBodyToResponse();
+    }
+  };
+
   // A module named applicationTest.Module2 (the generated name) that exposes a
   // bean named exposedBean and has a bean that depends on
   // testmodule.exposedBean.
@@ -238,6 +282,22 @@ public class ApplicationTest {
           final StringHolder response) {
       return new Module2Controller(response);
     }
+
+    @Bean public FilterRegistrationBean suffix1Filter() {
+      FilterRegistrationBean filter;
+      filter = new FilterRegistrationBean(new SuffixFilter(", 1"));
+      filter.setName("suffix1");
+      filter.setOrder(2);
+      return filter;
+    }
+
+    @Bean public FilterRegistrationBean suffix2Filter() {
+      FilterRegistrationBean filter;
+      filter = new FilterRegistrationBean(new SuffixFilter(", 2"));
+      filter.setName("suffix2");
+      filter.setOrder(1);
+      return filter;
+    }
   };
 
   public static class Module3 implements Registrator {
@@ -250,20 +310,28 @@ public class ApplicationTest {
     }
   }
 
-  // A test application with 3 test modules.
-  public static class TestApplication extends Application {
+  // A web test application with 3 test modules.
+  public static class WebApplication extends Application {
 
-    public TestApplication() {
+    public WebApplication() {
       super(new Module1(), new Module2(), new Module3());
     }
 
     public static void main(final String ... args) {
-      Application application = new TestApplication();
+      Application application = new WebApplication();
       application.run(new String[0]);
     }
 
     @Bean public String globalBean() {
       return "Global bean";
+    }
+  }
+
+  // A stand alone test application.
+  public static class StandAloneApplication extends Application {
+    public StandAloneApplication() {
+      super(new Module1());
+      setWebEnvironment(false);
     }
   }
 

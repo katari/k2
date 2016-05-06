@@ -15,6 +15,8 @@ import org.apache.commons.lang3.Validate;
 import java.beans.Introspector;
 import java.lang.reflect.Method;
 
+import javax.servlet.ServletContext;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.support
     .CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.boot.context.embedded.ServletContextInitializer;
 import org.springframework.boot.context.properties
     .EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -179,6 +182,9 @@ public class ModuleDefinition {
    * is the responsible for fully initializing and refreshing the returned
    * application context.
    *
+   * Once the module application context is refreshed, the context contains the
+   * module definition under the name k2.moduleDefinition.
+   *
    * This creates just one instance, no matter how many times it is called.
    *
    * @return a spring application context, never null.
@@ -225,6 +231,53 @@ public class ModuleDefinition {
     return context;
   }
 
+  /** Refreshes the wrapped application context.
+   *
+   * This operation refreshes the application context initializing the servlet
+   * related features, and exports the public beans to the parent bean factory.
+   *
+   * @param parentBeanFactory the bean factory to export the public beans to.
+   * It cannot be null.
+   *
+   * @param servletContext the context of the web application context that is
+   * running this application. Null if the application is not running in a web
+   * environment.
+   */
+  void refresh(final ConfigurableListableBeanFactory parentBeanFactory,
+      final ServletContext servletContext) {
+    Validate.notNull(parentBeanFactory,
+        "The parent bean factory cannot be null");
+    if (servletContext != null) {
+      getContext().setServletContext(servletContext);
+    }
+    getContext().refresh();
+    exportPublicBeans(parentBeanFactory);
+  }
+
+  /** Returns a list of servlet context initializers registered in the module.
+   *
+   * A module writer may add private servlets and filters to his module, and
+   * ask K2 to register them in the servlet container by creating
+   * ServletRegistrationBean or FilterRegistrationBean beans (or any kind of
+   * ServletContextInitializer).
+   *
+   * If you want to specify the order of your initializers, do not add @Order
+   * to the bean definition, it is ignored. You need to set the order attribute
+   * in the RegistrationBean.
+   *
+   * @return all the context initializers registered in the current module,
+   * never returns null.
+   */
+  List<ServletContextInitializer> getServletContextInitializers() {
+    List<ServletContextInitializer>  result = new LinkedList<>();
+
+    // Obtains all the ServletContextInitializer instances in the module
+    result.addAll(getContext().getBeansOfType(ServletContextInitializer.class,
+        false, false).values());
+
+    return result;
+  }
+
   /** Export all the beans that have been recorded as public in
    * recordPublicBeanNames.
    *
@@ -239,7 +292,7 @@ public class ModuleDefinition {
    * @param parentBeanFactory the bean factory to register the public beans. It
    * cannot be null.
    */
-  void exportPublicBeans(
+  private void exportPublicBeans(
       final ConfigurableListableBeanFactory parentBeanFactory) {
     log.trace("Entering exportPublicBeans");
     Validate.notNull(parentBeanFactory,
