@@ -22,16 +22,6 @@
 
   <name>K2 module archetype</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.github.katari</groupId>
-      <artifactId>k2-archetype-application</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
   <build>
     <extensions>
       <extension>
