@@ -112,9 +112,7 @@
         <configuration>
           <useTestClasspath>true</useTestClasspath>
           <folders><folder>target/test-classes</folder></folders>
-          <mainClass>
-            com.k2.core.ApplicationTest$TestApplication
-          </mainClass>
+          <mainClass>com.k2.core.ApplicationTest$WebApplication</mainClass>
         </configuration>
       </plugin>
 

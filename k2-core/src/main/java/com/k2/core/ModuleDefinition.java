@@ -88,8 +88,9 @@ public class ModuleDefinition {
    */
   public String getModuleName() {
     Class<?> moduleClass = moduleInstance.getClass();
-    Component component = moduleClass.getAnnotation(Component.class);
+
     String name = null;
+    Component component = moduleClass.getAnnotation(Component.class);
     if (component != null) {
       name = component.value();
     }
@@ -117,6 +118,41 @@ public class ModuleDefinition {
    */
   public <T> T getBean(final Class<T> type) {
     return context.getBean(type);
+  }
+
+  /** Returns the classpath root relative location of the static content
+   * served by this module.
+   *
+   * K2 will expose the static content found in a subpackage called 'static'
+   * of the module package. The static content will be available in the url
+   * [base]/[module-name]/static/.
+   *
+   * @return a string of the form [package as path]/static/.
+   */
+  String getStaticPath() {
+    return moduleInstance.getClass().getPackage().getName().replace(".", "/")
+        + "/static/";
+  }
+
+  /** The file system relative path where to find this module resources.
+   *
+   * This is used to support reloading of static resources when they are
+   * modified during development. In debug mode, k2 will look for resources
+   * first in the file system based on this path, and then in their normal
+   * location in the classpath.
+   *
+   * @return the file system relative path of this module resources. Null if
+   * the module does support reloading of resources during development.
+   */
+  String getRelativePath() {
+    Class<?> moduleClass = moduleInstance.getClass();
+
+    String path = null;
+    Module module = moduleClass.getAnnotation(Module.class);
+    if (module != null && !module.relativePath().isEmpty()) {
+      path = module.relativePath();
+    }
+    return path;
   }
 
   /** Returns an instance of the module registry factory if the module

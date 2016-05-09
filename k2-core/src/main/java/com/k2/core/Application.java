@@ -28,7 +28,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.context.support
     .PropertySourcesPlaceholderConfigurer;
 
-/**A k2 application.
+/** A k2 application.
  *
  * A k2 application wraps a spring boot application, that itself wraps a spring
  * application context. K2 creates a hierarchy of application contexts with

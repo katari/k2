@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
-/** Marks a spring bean as public, ie., the bean will be available to other k2
+/** Marks a spring bean as public, ie, the bean will be available to other k2
  * modules.
  */
 @Documented

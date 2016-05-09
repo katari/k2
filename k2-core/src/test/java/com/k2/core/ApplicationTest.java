@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.containsString;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,8 @@ public class ApplicationTest {
   private static boolean initCalled = false;
 
   private Application application;
+
+  private String baseUrl = "http://localhost:8081";
 
   @Before public void setUp() {
     log.trace("Entering setUp");
@@ -126,8 +129,16 @@ public class ApplicationTest {
         is(not(nullValue())));
   }
 
+  @Test public void staticTest() throws Exception {
+    String endpoint = baseUrl + "/testmodule/static/static-test.html";
+    try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
+      scanner.useDelimiter("\\A");
+      assertThat(scanner.next(), containsString("static content"));
+      }
+    }
+
   @Test public void module2Controller() throws Exception {
-    String endpoint = "http://localhost:8081/applicationTest.Module2/hi.html";
+    String endpoint = baseUrl + "/applicationTest.Module2/hi.html";
     try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
       scanner.useDelimiter("\\A");
       assertThat(scanner.next(), is("Module 1 exposed bean, 1, 2"));
@@ -178,6 +189,7 @@ public class ApplicationTest {
 
   // A module named testmodule that exposes a bean named exposedBean.
   @Component("testmodule")
+  @Module(relativePath = "../k2-core/src/test/resources")
   public static class Module1 implements RegistryFactory {
 
     private List<Module1Configurer> configurers = new LinkedList<>();

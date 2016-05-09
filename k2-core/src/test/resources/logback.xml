@@ -3,7 +3,8 @@
 <configuration debug="false" scan="false">
 
   <property name="LOG_FILE" value="target/log/test.log" />
-  <property name="LAUNCHER_CLASS" value="com.k2.SampleLauncher" />
+  <property name="LAUNCHER_CLASS"
+    value="com.k2.core.ApplicationTest$WebApplication" />
 
   <include resource="com/k2/core/logback/base.xml" />
 
