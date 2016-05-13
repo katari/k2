@@ -18,6 +18,7 @@ import org.springframework.boot.context.embedded
 import org.springframework.boot.context.embedded.jetty
   .JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
+import org.springframework.boot.context.embedded.ServletRegistrationBean;
 
 import org.springframework.context.annotation.Bean;
 
@@ -104,6 +105,34 @@ public class WebConfiguration {
     };
     log.trace("Leaving JettyServerCustomizer");
     return result;
+  }
+
+  /** Creates the home servlet that redirects to a configurable landing url.
+   *
+   * K2 maps this servlet to the web context root ("/") and redirects the user
+   * to another page that usually belongs to some module.
+   *
+   * NOTE: this is not the best approach, because this servlet only knows about
+   * a single url. We will, in the future, let application writers provide a
+   * strategy to determine the landing page.
+   *
+   * @param landingUrl the application-wise landing url. Null if not defined.
+   *
+   * @return the home servlet (an instance of HomeServlet) mapped to the root
+   * path of the web application context. If landingUrl is null this servlet
+   * shows a hardcoded message.
+   */
+  @Bean(name = "k2.homeServlet")
+  public ServletRegistrationBean homeServlet(
+      @Value("${k2.landingUrl:}") final String landingUrl) {
+
+    ServletRegistrationBean servletBean = null;
+    if (landingUrl != null) {
+      servletBean = new ServletRegistrationBean(new HomeServlet(landingUrl),
+          false, "");
+      servletBean.setOrder(Integer.MAX_VALUE);
+    }
+    return servletBean;
   }
 }
 

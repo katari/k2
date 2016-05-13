@@ -4,10 +4,8 @@ package com.k2.core;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 
 import java.io.IOException;
-import java.net.URL;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -27,6 +25,12 @@ import static org.hamcrest.CoreMatchers.containsString;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.http.client.fluent.Executor;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
@@ -50,11 +54,20 @@ public class ApplicationTest {
 
   private String baseUrl = "http://localhost:8081";
 
+  private CloseableHttpClient httpClient = HttpClientBuilder.create()
+      .setRedirectStrategy(new LaxRedirectStrategy()).build();
+
+  private Executor executor;
+
   @Before public void setUp() {
     log.trace("Entering setUp");
     initCalled = false;
     application = new WebApplication();
-    application.run(new String[0]);
+    application.run(new String[] {
+      "--k2.landingUrl=/testmodule/static/static-test.html"
+    });
+
+    executor = Executor.newInstance(httpClient);
     log.trace("Leaving setUp");
   }
 
@@ -131,18 +144,23 @@ public class ApplicationTest {
 
   @Test public void staticTest() throws Exception {
     String endpoint = baseUrl + "/testmodule/static/static-test.html";
-    try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
-      scanner.useDelimiter("\\A");
-      assertThat(scanner.next(), containsString("static content"));
-      }
-    }
+
+    String page;
+    page = executor.execute(Request.Get(endpoint)).returnContent().asString();
+    assertThat(page, containsString("static content"));
+  }
 
   @Test public void module2Controller() throws Exception {
     String endpoint = baseUrl + "/applicationTest.Module2/hi.html";
-    try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
-      scanner.useDelimiter("\\A");
-      assertThat(scanner.next(), is("Module 1 exposed bean, 1, 2"));
-    }
+    String page;
+    page = executor.execute(Request.Get(endpoint)).returnContent().asString();
+    assertThat(page, is("Module 1 exposed bean, 1, 2"));
+  }
+
+  @Test public void home() throws Exception {
+    String page;
+    page = executor.execute(Request.Get(baseUrl)).returnContent().asString();
+    assertThat(page, containsString("static content"));
   }
 
   // Tests that k2 calls init on modules that implement Module.
@@ -169,12 +187,12 @@ public class ApplicationTest {
     }
   }
 
-  public static class Module1Configurer {
+  public static class Module1Registry {
 
     private String configuration;
     private ModuleDefinition requestor;
 
-    Module1Configurer(final ModuleDefinition theRequestor) {
+    Module1Registry(final ModuleDefinition theRequestor) {
       requestor = theRequestor;
     }
 
@@ -192,14 +210,13 @@ public class ApplicationTest {
   @Module(relativePath = "../k2-core/src/test/resources")
   public static class Module1 implements RegistryFactory {
 
-    private List<Module1Configurer> configurers = new LinkedList<>();
+    private List<Module1Registry> registries = new LinkedList<>();
 
     @Override
-    public Module1Configurer getRegistry(
-        final ModuleDefinition requestor) {
-      Module1Configurer configurer = new Module1Configurer(requestor);
-      configurers.add(configurer);
-      return configurer;
+    public Module1Registry getRegistry(final ModuleDefinition requestor) {
+      Module1Registry registry = new Module1Registry(requestor);
+      registries.add(registry);
+      return registry;
     }
 
     @Bean public StringHolder testBean() {
@@ -217,8 +234,8 @@ public class ApplicationTest {
 
     @Bean public String configuration() {
       String result = "";
-      for (Module1Configurer configurer : configurers) {
-        result += configurer.getOption() + "\n";
+      for (Module1Registry registry : registries) {
+        result += registry.getOption() + "\n";
       }
       return result;
     }
@@ -269,8 +286,7 @@ public class ApplicationTest {
 
     public void addRegistrations(final ModuleContext moduleContext) {
       initCalled = true;
-      Module1Configurer configuration;
-      configuration = moduleContext.get(Module1Configurer.class);
+      Module1Registry configuration = moduleContext.get(Module1Registry.class);
       configuration.setOption("option1");
     }
 
@@ -316,8 +332,8 @@ public class ApplicationTest {
 
     public void addRegistrations(final ModuleContext moduleContext) {
       initCalled = true;
-      Module1Configurer configuration;
-      configuration = moduleContext.get(Module1Configurer.class);
+      Module1Registry configuration;
+      configuration = moduleContext.get(Module1Registry.class);
       configuration.setOption("option1");
     }
   }
@@ -331,7 +347,9 @@ public class ApplicationTest {
 
     public static void main(final String ... args) {
       Application application = new WebApplication();
-      application.run(new String[0]);
+      application.run(new String[] {
+        "--k2.landingUrl=/testmodule/static/static-test.html"
+      });
     }
 
     @Bean public String globalBean() {

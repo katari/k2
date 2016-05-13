@@ -275,8 +275,10 @@ public class Application {
       public void initialize(final ConfigurableApplicationContext parent) {
         // Add the post processor to support @Value in the spring
         // configuration.
-        parent.addBeanFactoryPostProcessor(
-          new PropertySourcesPlaceholderConfigurer());
+        PropertySourcesPlaceholderConfigurer placeHolderConfigurer =
+            new PropertySourcesPlaceholderConfigurer();
+        placeHolderConfigurer.setEnvironment(parent.getEnvironment());
+        parent.addBeanFactoryPostProcessor(placeHolderConfigurer);
 
         // Add the application context for each module.
         for (ModuleDefinition moduleDefinition : modules.values()) {
