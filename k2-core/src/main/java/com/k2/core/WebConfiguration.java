@@ -2,14 +2,7 @@
 
 package com.k2.core;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.ForwardedRequestCustomizer;
-import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,9 +21,6 @@ import org.springframework.context.annotation.Bean;
  */
 public class WebConfiguration {
 
-  /** The class logger. */
-  private final Logger log = LoggerFactory.getLogger(WebConfiguration.class);
-
   /** Configures the embedded servlet container implementation.
    *
    * This bean creates and configures a jetty embedded server.
@@ -46,11 +36,10 @@ public class WebConfiguration {
       @Value("${server.port:8081}") final int port,
       final JettyServerCustomizer serverCustomizer) {
 
-    JettyEmbeddedServletContainerFactory factory =
-        new JettyEmbeddedServletContainerFactory("", port);
-    //Integer.valueOf(port));
+    JettyEmbeddedServletContainerFactory factory;
+    factory = new JettyEmbeddedServletContainerFactory("", port);
     factory.addServerCustomizers(serverCustomizer);
-    factory.addServerCustomizers(forwardedRequestCustomizer());
+    factory.setUseForwardHeaders(true);
 
     return factory;
   }
@@ -84,30 +73,6 @@ public class WebConfiguration {
     return customizer;
   }
 
-  /** Jetty customizer to read the X-forwarded- related headers.
-   *
-   * @return a spring boot customizer that adds the ForwardedRequestCustomizer
-   * to the jetty http connector.
-   */
-  private JettyServerCustomizer forwardedRequestCustomizer() {
-    log.trace("Entering JettyServerCustomizer");
-    JettyServerCustomizer result = new JettyServerCustomizer() {
-      @Override
-      public void customize(final Server server) {
-        for (Connector connector : server.getConnectors()) {
-          if (connector instanceof ServerConnector) {
-            HttpConnectionFactory factory = ((ServerConnector) connector)
-                .getConnectionFactory(HttpConnectionFactory.class);
-            factory.getHttpConfiguration().addCustomizer(
-                new ForwardedRequestCustomizer());
-          }
-        }
-      }
-    };
-    log.trace("Leaving JettyServerCustomizer");
-    return result;
-  }
-
   /** Creates the home servlet that redirects to a configurable landing url.
    *
    * K2 maps this servlet to the web context root ("/") and redirects the user
@@ -128,8 +93,8 @@ public class WebConfiguration {
       @Qualifier("k2.landingUrl") final String landingUrl) {
 
     ServletRegistrationBean servletBean = null;
-    servletBean = new ServletRegistrationBean(new HomeServlet(landingUrl),
-        false, "");
+    HomeServlet homeServlet = new HomeServlet(landingUrl);
+    servletBean = new ServletRegistrationBean(homeServlet, false, "");
     servletBean.setOrder(Integer.MAX_VALUE);
     return servletBean;
   }

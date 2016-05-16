@@ -54,7 +54,7 @@ class K2ApplicationContext extends AnnotationConfigApplicationContext {
   }
 
   /** Obtains a new bean factory.
-   * 
+   *
    * This is overriden to load bean definitions from a k2 application instance.
    * It uses the K2InstantiationStrategy.
    */
