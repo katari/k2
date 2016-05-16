@@ -3,7 +3,7 @@
 <configuration debug="false" scan="false">
 
   <property name="LOG_FILE" value="target/log/test.log" />
-  <property name="LAUNCHER_CLASS" value="${package}.${classPrefix}Test$TestApplication" />
+  <property name="LAUNCHER_CLASS" value="com.k2.shiro.ShiroTest$TestApplication" />
 
   <include resource="com/k2/core/logback/base.xml" />
 

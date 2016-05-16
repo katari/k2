@@ -38,6 +38,21 @@
 
   </dependencies>
 
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <useTestClasspath>true</useTestClasspath>
+          <folders><folder>target/test-classes</folder></folders>
+          <mainClass>${package}.${classPrefix}Test$TestApplication</mainClass>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
   <!-- vim: set ts=2 et sw=2 ai: -->
 
 </project>

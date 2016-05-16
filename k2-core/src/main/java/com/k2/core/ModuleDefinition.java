@@ -223,6 +223,7 @@ public class ModuleDefinition {
    */
   AnnotationConfigWebApplicationContext getContext() {
     if (context == null) {
+
       context = new AnnotationConfigWebApplicationContext() {
         @Override
         protected void loadBeanDefinitions(
@@ -232,6 +233,7 @@ public class ModuleDefinition {
           super.loadBeanDefinitions(beanFactory);
         }
       };
+
       context.setEnvironment(new K2Environment(context.getEnvironment()));
       context.register(AnnotationHolder.class);
       context.register(moduleInstance.getClass());

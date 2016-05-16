@@ -55,6 +55,11 @@ public class ${classPrefix}Test {
     public TestApplication() {
       super(new ${classPrefix}());
     }
+
+    public static void main(final String ... args) {
+      Application application = new TestApplication();
+      application.run(new String[0]);
+    }
   }
 }
 

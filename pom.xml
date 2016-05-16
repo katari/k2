@@ -23,6 +23,7 @@
     <module>k2-archetype-application</module>
     <module>k2-archetype-module</module>
     <module>k2-build-tools</module>
+    <module>k2-shiro</module>
   </modules>
 
   <!-- vim: set ts=2 et sw=2 ai: -->

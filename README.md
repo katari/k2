@@ -21,7 +21,6 @@ contains your main operation:
       }
     }
 
-
 Write your application:
 
     public class MyApplication extends Application {
@@ -45,4 +44,17 @@ and write your modules:
         return new "Module 1 private bean";
       }
     };
+
+## Using archetypes
+
+K2 provides two archetypes: k2-archetype-application, to create a sample
+application with one module, and k2-archetype-module to add more modules to
+your application.
+
+This is the command we used to generate the k2-shiro module:
+
+    mvn -B archetype:generate -DarchetypeGroupId=com.github.katari \
+      -DarchetypeArtifactId=k2-archetype-module -DarchetypeCatalog=local \
+      -DgroupId=com.github.katari -DartifactId=k2-shiro \
+      -Dpackage=com.k2.shiro -DclassPrefix=Shiro -Dversion=0.1-SNAPSHOT
 
