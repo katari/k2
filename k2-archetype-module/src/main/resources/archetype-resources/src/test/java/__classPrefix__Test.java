@@ -18,6 +18,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 
+import org.springframework.context.annotation.Configuration;
+
 import com.k2.core.Application;
 
 /** The ${classPrefix} module integration tests.
@@ -48,6 +50,7 @@ public class ${classPrefix}Test {
   /////////////////////////////////////////////////////////////////////
   ///////////    The test application   ///////////////////////////////
   /////////////////////////////////////////////////////////////////////
+  @Configuration
   public static class TestApplication extends Application {
     public TestApplication() {
       super(new ${classPrefix}());

@@ -25,6 +25,7 @@ import org.springframework.web.context.support
     .AnnotationConfigWebApplicationContext;
 
 import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.support
     .PropertySourcesPlaceholderConfigurer;
 
@@ -82,6 +83,10 @@ public class Application {
    */
   private ConfigurableApplicationContext applicationContext;
 
+  /** The landing url, never null.
+   */
+  private String landingUrl = "";
+
   /** Creates a new Application with the given modules.
    *
    * @param moduleInstances the list of modules to bootstrap, cannot be null.
@@ -111,6 +116,24 @@ public class Application {
     Validate.isTrue(application == null,
         "setWebEnviroment cannot be called after run(...).");
     isWebEnvironment = isWeb;
+  }
+
+  /** Sets the landing url.
+   *
+   * @param theLandingUrl the landing url, it cannot be null.
+   */
+  public void setLandingUrl(final String theLandingUrl) {
+    Validate.notNull(theLandingUrl, "The landing url cannot be null.");
+    landingUrl = theLandingUrl;
+  }
+
+  /** The landing url.
+   *
+   * @return the landing url, never null, "" if the landing url was not
+   * configured.
+   */
+  @Bean(name = "k2.landingUrl") public String landingUrl() {
+    return landingUrl;
   }
 
   /** Launches the application.
@@ -218,9 +241,11 @@ public class Application {
         @Override
         protected ConfigurableApplicationContext createApplicationContext() {
           if (isWebEnvironment) {
-            return new K2WebApplicationContext(modules.values());
+            return new K2WebApplicationContext(Application.this,
+                modules.values());
           } else {
-            return new K2ApplicationContext(modules.values());
+            return new K2ApplicationContext(Application.this,
+                modules.values());
           }
         }
       };

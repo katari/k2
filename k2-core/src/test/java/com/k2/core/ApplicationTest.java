@@ -35,6 +35,7 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
@@ -63,9 +64,7 @@ public class ApplicationTest {
     log.trace("Entering setUp");
     initCalled = false;
     application = new WebApplication();
-    application.run(new String[] {
-      "--k2.landingUrl=/testmodule/static/static-test.html"
-    });
+    application.run(new String[0]);
 
     executor = Executor.newInstance(httpClient);
     log.trace("Leaving setUp");
@@ -83,6 +82,15 @@ public class ApplicationTest {
     emptyApplication.stop();
   }
 
+  @Test public void emptyApplicationConfigOption() {
+    application.stop();
+    Application emptyApplication = new EmptyApplication();
+    emptyApplication.run(new String[0]);
+    assertThat(emptyApplication.getBean("option").toString(),
+        is("configOption"));
+    emptyApplication.stop();
+  }
+
   @Test public void standAloneApplication() {
     application.stop();
     Application standAloneApplication = new StandAloneApplication();
@@ -90,6 +98,16 @@ public class ApplicationTest {
     assertThat(standAloneApplication.getApplication(), is(not(nullValue())));
     assertThat(standAloneApplication.getBean(Module1.class, "testBean")
         .toString(), is("Module 1 private bean"));
+    standAloneApplication.stop();
+  }
+
+  @Test public void standAloneConfigOption() {
+    application.stop();
+    Application standAloneApplication;
+    standAloneApplication = new StandAloneApplication();
+    standAloneApplication.run(new String[0]);
+    assertThat(standAloneApplication.getBean("option").toString(),
+        is("configOption"));
     standAloneApplication.stop();
   }
 
@@ -339,17 +357,17 @@ public class ApplicationTest {
   }
 
   // A web test application with 3 test modules.
+  @Configuration
   public static class WebApplication extends Application {
 
     public WebApplication() {
       super(new Module1(), new Module2(), new Module3());
+      super.setLandingUrl("/testmodule/static/static-test.html");
     }
 
     public static void main(final String ... args) {
       Application application = new WebApplication();
-      application.run(new String[] {
-        "--k2.landingUrl=/testmodule/static/static-test.html"
-      });
+      application.run(new String[0]);
     }
 
     @Bean public String globalBean() {
@@ -358,15 +376,27 @@ public class ApplicationTest {
   }
 
   // A stand alone test application.
+  @Configuration
   public static class StandAloneApplication extends Application {
+    private String option = "configOption";
     public StandAloneApplication() {
       super(new Module1());
       setWebEnvironment(false);
     }
+
+    @Bean public String option() {
+      return option;
+    }
   }
 
   // A test application with no modules.
+  @Configuration
   public static class EmptyApplication extends Application {
+    private String option = "configOption";
+
+    @Bean public String option() {
+      return option;
+    }
   }
 }
 

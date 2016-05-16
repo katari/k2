@@ -5,6 +5,8 @@
 
 package ${package}app;
 
+import org.springframework.context.annotation.Configuration;
+
 import com.k2.core.Application;
 
 import ${package}.${classPrefix};
@@ -13,6 +15,7 @@ import ${package}.${classPrefix};
  *
  * This application includes the ${classPrefix} module.
  */
+@Configuration
 public class ${classPrefix}Application extends Application {
 
   /** Constructor, creates a ${classPrefix}Application and registers the

@@ -12,6 +12,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded
   .EmbeddedServletContainerFactory;
@@ -124,14 +125,12 @@ public class WebConfiguration {
    */
   @Bean(name = "k2.homeServlet")
   public ServletRegistrationBean homeServlet(
-      @Value("${k2.landingUrl:}") final String landingUrl) {
+      @Qualifier("k2.landingUrl") final String landingUrl) {
 
     ServletRegistrationBean servletBean = null;
-    if (landingUrl != null) {
-      servletBean = new ServletRegistrationBean(new HomeServlet(landingUrl),
-          false, "");
-      servletBean.setOrder(Integer.MAX_VALUE);
-    }
+    servletBean = new ServletRegistrationBean(new HomeServlet(landingUrl),
+        false, "");
+    servletBean.setOrder(Integer.MAX_VALUE);
     return servletBean;
   }
 }

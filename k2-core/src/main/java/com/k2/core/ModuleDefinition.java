@@ -18,15 +18,11 @@ import java.lang.reflect.Method;
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support
-    .CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.context.embedded.ServletContextInitializer;
 import org.springframework.boot.context.properties
     .EnableConfigurationProperties;
@@ -228,20 +224,11 @@ public class ModuleDefinition {
   AnnotationConfigWebApplicationContext getContext() {
     if (context == null) {
       context = new AnnotationConfigWebApplicationContext() {
+        @Override
         protected void loadBeanDefinitions(
             final DefaultListableBeanFactory beanFactory) {
           beanFactory.setInstantiationStrategy(
-              new CglibSubclassingInstantiationStrategy() {
-                public Object instantiate(
-                    final RootBeanDefinition beanDefinition,
-                    final String beanName, final BeanFactory owner) {
-                  if (beanName.equals(getModuleName())) {
-                    return moduleInstance;
-                  }
-                  return super.instantiate(beanDefinition, beanName, owner);
-                }
-
-              });
+              new K2InstantiationStrategy(getModuleName(), moduleInstance));
           super.loadBeanDefinitions(beanFactory);
         }
       };
