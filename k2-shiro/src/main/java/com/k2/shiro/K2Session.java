@@ -20,8 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.shiro.codec.Base64;
-
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.session.InvalidSessionException;
 import org.apache.shiro.session.mgt.ValidatingSession;
@@ -32,6 +30,9 @@ public class K2Session implements ValidatingSession {
 
   /** The class logger. */
   private final Logger log = LoggerFactory.getLogger(K2Session.class);
+
+  /** The cipher to use to encrypt session cookies, never null. */
+  private K2Cipher cipher;
 
   /** The servlet request, never null.
    */
@@ -57,15 +58,20 @@ public class K2Session implements ValidatingSession {
 
   /** Constructor, creates a k2 session.
    *
+   * @param theCipher the cipher to use to encrypt and decript session cookies.
+   * It cannot be null.
+   *
    * @param theHost the host that originated the request.
    *
    * @param theRequest the servlet request. It cannot be null.
    *
    * @param theResponse the servlet request. It cannot be null.
    */
-  public K2Session(final String theHost, final HttpServletRequest theRequest,
+  public K2Session(final K2Cipher theCipher, final String theHost,
+      final HttpServletRequest theRequest,
       final HttpServletResponse theResponse) {
 
+    cipher = theCipher;
     request = theRequest;
     response = theResponse;
     host = theHost;
@@ -91,7 +97,7 @@ public class K2Session implements ValidatingSession {
     ObjectInputStream ois;
     try {
       ois = new ObjectInputStream(
-          new ByteArrayInputStream(Base64.decode(value)));
+          new ByteArrayInputStream(cipher.decrypt(value)));
       attributes = (Map<Object, Object>) ois.readObject();
     } catch (ClassNotFoundException | IOException e) {
       log.debug("Could not deserialize session, ignored");
@@ -116,7 +122,7 @@ public class K2Session implements ValidatingSession {
         oos = new ObjectOutputStream(baos);
         oos.writeObject(attributes);
         oos.close();
-        sessionValue = Base64.encodeToString(baos.toByteArray());
+        sessionValue = cipher.encrypt(baos.toByteArray());
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -138,10 +144,12 @@ public class K2Session implements ValidatingSession {
     return value;
   }
 
-  /** Not implemented yet. */
+  /** This is not relevant, this implementation simply returns the java object
+   * identifier.
+   */
   @Override
   public Serializable getId() {
-    return null;
+    return System.identityHashCode(this);
   }
 
   /** Not implemented yet. */

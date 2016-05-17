@@ -61,7 +61,7 @@ public class ShiroTest {
     log.trace("Entering setUp");
 
     application = new TestApplication();
-    application.run(new String[0]);
+    application.run(new String[] {"--shiro.password=x"});
 
     executor = Executor.newInstance(httpClient);
 
@@ -78,7 +78,7 @@ public class ShiroTest {
   }
 
   @Test public void securityManager() {
-    assertThat(application.getBean(Shiro.class, "webSecurityManager"),
+    assertThat(application.getBean(Shiro.class, "securityManager"),
         is(not(nullValue())));
   }
 
@@ -175,7 +175,7 @@ public class ShiroTest {
 
     public static void main(final String ... args) {
       Application application = new TestApplication();
-      application.run(new String[0]);
+      application.run(new String[] {"--shiro.password=x"});
     }
 
     @Bean public Realm realm() {

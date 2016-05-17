@@ -4,6 +4,8 @@ package com.k2.core;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.webapp.AbstractConfiguration;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +25,9 @@ public class WebConfiguration {
 
   /** Configures the embedded servlet container implementation.
    *
-   * This bean creates and configures a jetty embedded server.
+   * This bean creates and configures a jetty embedded server. The server will
+   * stop and throw an error if the spring application context cannot be
+   * correctly initialized.
    *
    * @param port the port that jetty will listen on.
    *
@@ -39,6 +43,12 @@ public class WebConfiguration {
     JettyEmbeddedServletContainerFactory factory;
     factory = new JettyEmbeddedServletContainerFactory("", port);
     factory.addServerCustomizers(serverCustomizer);
+    factory.addConfigurations(new AbstractConfiguration() {
+      @Override
+      public void configure(final WebAppContext context) throws Exception {
+        context.setThrowUnavailableOnStartupException(true);
+      }
+    });
     factory.setUseForwardHeaders(true);
 
     return factory;

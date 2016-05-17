@@ -27,6 +27,7 @@ import org.springframework.boot.context.embedded.ServletContextInitializer;
 import org.springframework.boot.context.properties
     .EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
@@ -237,6 +238,10 @@ public class ModuleDefinition {
       context.setEnvironment(new K2Environment(context.getEnvironment()));
       context.register(AnnotationHolder.class);
       context.register(moduleInstance.getClass());
+      PropertySourcesPlaceholderConfigurer placeHolderConfigurer =
+          new PropertySourcesPlaceholderConfigurer();
+      placeHolderConfigurer.setEnvironment(context.getEnvironment());
+      context.addBeanFactoryPostProcessor(placeHolderConfigurer);
       context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
 
         /** {@inheritDoc} */

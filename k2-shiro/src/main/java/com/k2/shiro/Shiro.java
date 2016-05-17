@@ -10,12 +10,14 @@ import javax.servlet.Filter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.commons.lang3.Validate;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
-import org.apache.commons.lang3.Validate;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 
@@ -93,18 +95,22 @@ public class Shiro implements RegistryFactory {
 
   /** The security manager.
    *
+   * @param cipher the cipher to use to encrypt and decrypt session cookies.
+   *
    * @param realm the realm used by the security manager. This in intended to
    * be configured in the K2 application as a spring bean. The name is
    * irrelevant, it will be matched by type. It cannot be null.
    *
    * @return the security manager, never null.
    */
-  @Bean public SecurityManager webSecurityManager(final Realm realm) {
+  @Bean public SecurityManager securityManager(final K2Cipher cipher,
+      final Realm realm) {
     Validate.notNull(realm,
         "The realm cannot be null. Create one in your application.");
     DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
     securityManager.setRealm(realm);
     securityManager.setSubjectFactory(new K2SubjectFactory());
+    securityManager.setSessionManager(new K2SessionManager(cipher));
     return securityManager;
   }
 
@@ -141,6 +147,19 @@ public class Shiro implements RegistryFactory {
     registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 
     return registration;
+  }
+
+  /** Creates the cipher to encrypt and decrypt shiro session cookies.
+   *
+   * @param password the password to use. It cannot be null.
+   *
+   * @return cipher, never returns null.
+   */
+  @Bean public K2Cipher cipher(
+      @Value("${shiro.password:}") final String password) {
+    Validate.notBlank(password,
+        "You must define a property shiro.password with the session password.");
+    return new K2Cipher(password);
   }
 }
 

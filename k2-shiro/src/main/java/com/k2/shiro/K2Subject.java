@@ -4,8 +4,6 @@ package com.k2.shiro;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,27 +17,19 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
 
-/** A shiro subject that delegates its state and session information to a
- * browser cookie.
+/** A shiro subject that obtains it login information from a browser cookie
+ * generated session.
  *
  * This subject lets you support 'stateless' web applications with very little
  * state in its 'session'. It knows about http requests and responses, and can
  * read and write state to a cookie.
  *
- * See K2Session for more information.
+ * See K2Session and K2SessionManager for more information.
  */
 public class K2Subject extends WebDelegatingSubject {
 
   /** The class logger. */
   private final Logger log = LoggerFactory.getLogger(K2Subject.class);
-
-  /** The servlet request, never null.
-   */
-  private HttpServletRequest request;
-
-  /** The servlet response, never null.
-   */
-  private HttpServletResponse response;
 
   /** The current session, initialized from a request cookie. It is never null.
    */
@@ -76,17 +66,10 @@ public class K2Subject extends WebDelegatingSubject {
     super(principals, authenticated, host, session, sessionEnabled, theRequest,
         theResponse, securityManager);
 
-    request = (HttpServletRequest) theRequest;
-    response = (HttpServletResponse) theResponse;
+    currentSession = (K2Session) session;
 
-    if (session == null) {
-      currentSession = new K2Session(super.getHost(), request, response);
-    } else {
-      currentSession = (K2Session) session;
-    }
-    super.session = currentSession;
     PrincipalCollection sessionPrincipals = (PrincipalCollection)
-        currentSession.getAttribute(
+        session.getAttribute(
             DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
     if (sessionPrincipals != null && super.principals == null) {
       // Copy principals from session.
@@ -94,11 +77,11 @@ public class K2Subject extends WebDelegatingSubject {
     }
 
     if (authenticated) {
-      currentSession.setAttribute(
+      session.setAttribute(
           DefaultSubjectContext.AUTHENTICATED_SESSION_KEY, Boolean.TRUE);
       super.authenticated = true;
     } else {
-      Object auth = currentSession.getAttribute(
+      Object auth = session.getAttribute(
           DefaultSubjectContext.AUTHENTICATED_SESSION_KEY);
       if (auth != null && ((boolean) auth)) {
         super.authenticated = true;
@@ -108,6 +91,9 @@ public class K2Subject extends WebDelegatingSubject {
     }
   }
 
+  /** We override this because the SaveSessionFilter needs a K2Session to
+   * store it in a cookie.
+   */
   @Override
   public K2Session getSession(final boolean create) {
     return currentSession;

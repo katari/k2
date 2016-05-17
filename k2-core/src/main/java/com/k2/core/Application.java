@@ -321,17 +321,17 @@ public class Application {
    * dispatcher servlet in a web environment. This operation does not refresh
    * the application context of any module.
    *
-   * @param context the global application context. It cannot be null.
+   * @param parent the global application context. It cannot be null.
    *
    * @param definition the definition of the module to register. It cannot be
    * null.
    */
-  private void createModule(final ConfigurableApplicationContext context,
+  private void createModule(final ConfigurableApplicationContext parent,
       final ModuleDefinition definition) {
 
     log.trace("Entering createModule {}", definition.getModuleName());
 
-    Validate.notNull(context, "The parent context cannot be null.");
+    Validate.notNull(parent, "The parent context cannot be null.");
     Validate.notNull(definition, "The module definiton cannot be null.");
 
     String moduleName = definition.getModuleName();
@@ -339,10 +339,10 @@ public class Application {
     // Creates a new web application context initialized with the moduleClass.
     AnnotationConfigWebApplicationContext moduleContext;
     moduleContext = definition.getContext();
-    moduleContext.setParent(context);
+    moduleContext.setParent(parent);
 
     if (isWebEnvironment) {
-      registerDispatcherServlet(context, moduleName, moduleContext);
+      registerDispatcherServlet(parent, moduleName, moduleContext);
     }
 
     log.trace("Leaving createModule");
