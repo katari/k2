@@ -369,7 +369,7 @@ public class ApplicationTest {
 
     public WebApplication() {
       super(new Module1(), new Module2(), new Module3());
-      super.setLandingUrl("/testmodule/static/static-test.html");
+      setLandingUrl("/testmodule/static/static-test.html");
     }
 
     public static void main(final String ... args) {

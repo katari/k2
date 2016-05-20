@@ -54,6 +54,7 @@ public class ${classPrefix}Test {
   public static class TestApplication extends Application {
     public TestApplication() {
       super(new ${classPrefix}());
+      setLandingUrl("${classPrefix.toLowerCase()}/hi.html");
     }
 
     public static void main(final String ... args) {
