@@ -36,7 +36,7 @@ public class HomeServlet extends HttpServlet {
    * message stating that you should configure it. It cannot be null.
    */
   public HomeServlet(final String theLandingUrl) {
-    Validate.notNull(theLandingUrl, "The landing page cannot be null.");
+    Validate.notNull(theLandingUrl, "Call setLandingUrl in your application.");
     landingUrl = theLandingUrl;
   }
 
