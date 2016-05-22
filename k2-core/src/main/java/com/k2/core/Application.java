@@ -23,7 +23,6 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.support
     .AnnotationConfigWebApplicationContext;
-
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support
@@ -305,6 +304,10 @@ public class Application {
         placeHolderConfigurer.setEnvironment(parent.getEnvironment());
         parent.addBeanFactoryPostProcessor(placeHolderConfigurer);
 
+        if (isWebEnvironment) {
+          registerRootDispatcherServlet(parent);
+        }
+
         // Add the application context for each module.
         for (ModuleDefinition moduleDefinition : modules.values()) {
           createModule(parent, moduleDefinition);
@@ -348,6 +351,34 @@ public class Application {
     log.trace("Leaving createModule");
   }
 
+  /** Registers a dispatcher servlet to serve webjars from the /webjars path.
+   *
+   * @param context the application root application context. It cannot be null.
+   */
+  private void registerRootDispatcherServlet(
+      final ConfigurableApplicationContext context) {
+    Validate.notNull(context, "The application context cannot be null.");
+
+    AnnotationConfigWebApplicationContext servletContext;
+    servletContext = new AnnotationConfigWebApplicationContext();
+    servletContext.setParent(context);
+
+    servletContext.register(RootDispatcherServletConfiguration.class);
+
+    DispatcherServlet dispatcherServlet;
+    dispatcherServlet = new DispatcherServlet(servletContext);
+
+    BeanDefinitionBuilder builder = BeanDefinitionBuilder
+        .rootBeanDefinition(ServletRegistrationBean.class);
+    builder.addConstructorArgValue(dispatcherServlet);
+    builder.addConstructorArgValue("/*");
+    builder.addPropertyValue("name", "k2.rootDispatcherServlet");
+    builder.setLazyInit(true);
+
+    BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context;
+    registry.registerBeanDefinition("k2-root", builder.getBeanDefinition());
+  }
+
   /** Creates a spring dispatcher servlet and registers it in the provided
    * context.
    *
@@ -385,6 +416,7 @@ public class Application {
     builder.addConstructorArgValue(dispatcherServlet);
     builder.addConstructorArgValue("/" + moduleName + "/*");
     builder.addPropertyValue("name", moduleName);
+    builder.addPropertyValue("order", 0);
     builder.setLazyInit(true);
 
     BeanDefinitionRegistry registry = (BeanDefinitionRegistry) context;

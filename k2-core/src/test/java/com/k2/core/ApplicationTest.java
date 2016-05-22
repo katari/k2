@@ -181,6 +181,13 @@ public class ApplicationTest {
     assertThat(page, containsString("static content"));
   }
 
+  @Test public void webjar() throws Exception {
+    String endpoint = baseUrl + "/webjars/jquery/2.2.4/jquery.min.js";
+    String page;
+    page = executor.execute(Request.Get(endpoint)).returnContent().asString();
+    assertThat(page, containsString("jQuery v2.2.4"));
+  }
+
   // Tests that k2 calls init on modules that implement Module.
   @Test public void init() {
     assertThat(initCalled, is(true));

@@ -11,9 +11,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import com.k2.core.Module;
+
 /** The ${classPrefix} module.
  */
 @Component("${classPrefix.toLowerCase()}")
+@Module(relativePath = "../${artifactId}/src/main/resources")
 public class ${classPrefix} {
 
   /** The class logger. */
