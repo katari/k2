@@ -94,10 +94,8 @@ public class K2Session implements ValidatingSession {
   @SuppressWarnings("unchecked")
   private void deserialize(final String value) {
     log.trace("Entering toMap()");
-    ObjectInputStream ois;
-    try {
-      ois = new ObjectInputStream(
-          new ByteArrayInputStream(cipher.decrypt(value)));
+    try (ObjectInputStream ois = new ObjectInputStream(
+        new ByteArrayInputStream(cipher.decrypt(value)))) {
       attributes = (Map<Object, Object>) ois.readObject();
     } catch (ClassNotFoundException | IOException e) {
       log.debug("Could not deserialize session, ignored");
@@ -109,6 +107,7 @@ public class K2Session implements ValidatingSession {
    * browser cookie.
    */
   void save() {
+    log.trace("Entering save");
 
     String sessionValue = "";
 
@@ -117,19 +116,19 @@ public class K2Session implements ValidatingSession {
       cookie.setMaxAge(0);
     } else {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      ObjectOutputStream oos = null;
-      try {
-        oos = new ObjectOutputStream(baos);
+      try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
         oos.writeObject(attributes);
         oos.close();
         sessionValue = cipher.encrypt(baos.toByteArray());
       } catch (IOException e) {
-        e.printStackTrace();
+        log.debug("Error saving session", e);
       }
     }
 
     cookie.setValue(sessionValue);
     cookie.saveTo(request, response);
+
+    log.trace("Leaving save");
   }
 
   @Override
