@@ -1,6 +1,10 @@
 package com.k2.shiro;
 
 import java.security.MessageDigest;
+import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -13,8 +17,16 @@ import org.apache.shiro.codec.Base64;
  *
  * This cipher encrypts an array of bytes an generates a base 64 encoded string
  * so that the encrypted data can be passed to browsers in cookies.
+ *
+ * Implementation note: the {@link K2Cipher} uses RC4 encryption algorithm.
+ * Depending on your installation, you may need to install the Java
+ * Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files,
+ * otherwise this cipher may use a shorter key length.
  */
 public class K2Cipher {
+
+  /** The class logger. */
+  private static Logger log = LoggerFactory.getLogger(K2Cipher.class);
 
   /** The encryption algorithm.*/
   private static final String ENCRYPTION_ALGORITHM = "RC4";
@@ -32,13 +44,23 @@ public class K2Cipher {
    */
   public K2Cipher(final String password) {
     Validate.notNull(password, "The password cannot be null.");
-    MessageDigest sha;
+    log.trace("Entering K2Cipher");
     try {
+      MessageDigest sha;
       sha = MessageDigest.getInstance("SHA-1");
       key = sha.digest(password.getBytes("UTF-8"));
+
+      int maxKeyLength = Cipher.getMaxAllowedKeyLength(ENCRYPTION_ALGORITHM);
+      if (maxKeyLength < key.length * Byte.SIZE) {
+        log.warn("Using limited AES key length of {} bits. Install Java"
+            + " Cryptography Extension (JCE) Unlimited Strength Jurisdiction"
+            + " Policy Files.", maxKeyLength);
+        key = Arrays.copyOf(key, maxKeyLength / Byte.SIZE);
+      }
     } catch (Exception e) {
       throw new RuntimeException("Error creating key from password", e);
     }
+    log.trace("Leaving K2Cipher");
   }
 
   /** Encrypts the provided plain text and generates an encrypted string.
