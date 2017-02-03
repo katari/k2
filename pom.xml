@@ -16,6 +16,12 @@
 
   <name>K2 project aggregator</name>
 
+  <scm>
+    <developerConnection>
+      scm:git:git://github.com/katari/k2
+    </developerConnection>
+  </scm>
+
   <distributionManagement>
     <repository>
       <id>ossrh</id>
