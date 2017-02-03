@@ -9,12 +9,17 @@
 
   <modelVersion>4.0.0</modelVersion>
 
+  <parent>
+    <groupId>com.github.katari</groupId>
+    <artifactId>k2</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
   <groupId>com.github.katari</groupId>
   <artifactId>k2-parent</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-
-  <name>K2 project parent</name>
 
   <dependencyManagement>
     <dependencies>

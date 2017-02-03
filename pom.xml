@@ -16,10 +16,34 @@
 
   <name>K2 project aggregator</name>
 
+  <description>
+    K2 simplifies structuring a java application around modules.
+  </description>
+
+  <url>https://github.com/katari/k2</url>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Pablo</name>
+      <email>pablo.pg@gmail.com</email>
+      <organization>Personal organization</organization>
+      <organizationUrl>https://github.com/katari</organizationUrl>
+    </developer>
+  </developers>
+
   <scm>
+    <connection>scm:git:git://github.com/katari/k2</connection>
     <developerConnection>
       scm:git:git://github.com/katari/k2
     </developerConnection>
+    <url>https://github.com/katari/k2</url>
   </scm>
 
   <distributionManagement>
@@ -39,6 +63,37 @@
     <module>k2-shiro</module>
   </modules>
 
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <preparationGoals>clean install</preparationGoals>
+          <pushChanges>false</pushChanges>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
   <!-- vim: set ts=2 et sw=2 ai: -->
 
 </project>
