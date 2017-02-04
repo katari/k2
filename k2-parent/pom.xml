@@ -18,6 +18,16 @@
   <version>0.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>org.jacoco.agent</artifactId>
+      <classifier>runtime</classifier>
+      <version>0.7.8</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <dependencyManagement>
     <dependencies>
 
@@ -237,6 +247,46 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.8</version>
+
+        <configuration>
+          <destFile>${sonar.jacoco.reportPaths}</destFile>
+          <append>true</append>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <!-- execution>
+            <id>default-instrument</id>
+            <goals>
+              <goal>instrument</goal>
+            </goals>
+          </execution -->
+          <!-- execution>
+            <id>default-restore-instrumented-classes</id>
+            <goals>
+              <goal>restore-instrumented-classes</goal>
+            </goals>
+          </execution -->
+          <execution>
+            <id>default-report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+
+      </plugin>
     </plugins>
 
     <pluginManagement>
@@ -284,6 +334,12 @@
     <spring.version>4.2.5.RELEASE</spring.version>
     <hibernate.version>5.1.0.Final</hibernate.version>
     <shiro.version>1.2.4</shiro.version>
+
+    <!-- Sonar -->
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.jacoco.reportPaths>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPaths>
+    <sonar.language>java</sonar.language>
   </properties>
 
   <!-- vim: set ts=2 et sw=2 ai: -->
