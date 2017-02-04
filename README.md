@@ -9,6 +9,14 @@ simply serves as a module container. Modules are isolated pieces of
 functionality that touch other modules and the application through very
 specific 'contact surfaces'.
 
+## Tools
+
+We use travis and sonar:
+
+- https://travis-ci.org/katari/k2
+
+- https://sonarqube.com/dashboard?id=com.github.katari%3Ak2
+
 ## The main structure
 
 We strongly recommend that you create a simple application launcher that
