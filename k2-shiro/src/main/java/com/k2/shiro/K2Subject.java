@@ -8,7 +8,6 @@ import javax.servlet.ServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.mgt.SecurityManager;
 
@@ -103,8 +102,7 @@ public class K2Subject extends WebDelegatingSubject {
    * principal in the session.
    */
   @Override
-  public void login(final AuthenticationToken token)
-      throws AuthenticationException {
+  public void login(final AuthenticationToken token) {
     log.trace("Entering login");
     super.login(token);
     session.setAttribute(DefaultSubjectContext.AUTHENTICATED_SESSION_KEY,

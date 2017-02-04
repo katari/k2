@@ -102,8 +102,8 @@ public class WebConfiguration {
   public ServletRegistrationBean homeServlet(
       @Qualifier("k2.landingUrl") final String landingUrl) {
 
-    ServletRegistrationBean servletBean = null;
     HomeServlet homeServlet = new HomeServlet(landingUrl);
+    ServletRegistrationBean servletBean;
     servletBean = new ServletRegistrationBean(homeServlet, false, "");
     servletBean.setOrder(Integer.MAX_VALUE);
     return servletBean;

@@ -34,7 +34,7 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
    * find another way, given that this is used in an overriden operation from
    * WebMvcConfigurationSupport.
    */
-  private @Value(value = "${debug:false}") boolean debug;
+  @Value(value = "${debug:false}") private boolean debug;
 
   /** The module definition that owns the DispatcherServlet of this
    * configuration.
@@ -45,7 +45,7 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
    * find another way, given that this is used in an overriden operation from
    * WebMvcConfigurationSupport.
    */
-  private @Autowired ModuleDefinition moduleDefinition;
+  @Autowired private ModuleDefinition moduleDefinition;
 
   /** Defines a handler mapping to look for handlers in the current
    * application context and its parent.

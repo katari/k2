@@ -168,7 +168,7 @@ public class Hibernate implements RegistryFactory {
   static class HibernateRegistryLocator implements Service {
 
     /** The registries to expose to the hibernate tuplizers, never null. */
-    private List<HibernateRegistry> registries;
+    private transient List<HibernateRegistry> registries;
 
     /** Constructor, creates a hibernate registry locator.
      *

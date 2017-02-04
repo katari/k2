@@ -1,12 +1,15 @@
 language: java
 
 jdk:
-        - oraclejdk8
-        - oraclejdk7
-        - openjdk7
+ - oraclejdk8
+ - oraclejdk7
+ - openjdk7
 
 script:
  - mvn clean install
+ - mvn sonar:sonar \
+    -Dsonar.host.url=https://sonarqube.com \
+    -Dsonar.login=a124806665c898daa91438c3df853e97456582b9
 
 notifications:
   email:

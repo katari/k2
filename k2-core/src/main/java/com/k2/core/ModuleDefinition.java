@@ -17,7 +17,6 @@ import java.lang.reflect.Method;
 
 import javax.servlet.ServletContext;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -207,7 +206,7 @@ public class ModuleDefinition {
    * but that class is package access, so I cannot not add it directly.
    */
   @EnableConfigurationProperties
-  private static class AnnotationHolder {};
+  private static class AnnotationHolder {}
 
   /** Returns the application context initialized from the module instance.
    *
@@ -247,8 +246,7 @@ public class ModuleDefinition {
         /** {@inheritDoc} */
         @Override
         public void postProcessBeanFactory(
-            final ConfigurableListableBeanFactory beanFactory)
-                throws BeansException {
+            final ConfigurableListableBeanFactory beanFactory) {
           beanFactory.registerSingleton("k2.moduleDefinition",
               ModuleDefinition.this);
           BeanDefinitionRegistry beanRegistry;

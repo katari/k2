@@ -111,8 +111,7 @@ public class HibernateRegistry {
    * registered without a factory.
    */
   Object getFactoryFor(final Class<?> persistentClass) {
-    Class<?> factoryType = null;
-    factoryType = factories.get(persistentClass);
+    Class<?> factoryType = factories.get(persistentClass);
     if (factoryType != null) {
       return requestor.getBean(factoryType);
     }

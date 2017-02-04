@@ -9,7 +9,6 @@ import org.apache.commons.lang3.Validate;
 
 import org.apache.shiro.web.session.mgt.WebSessionKey;
 import org.apache.shiro.session.Session;
-import org.apache.shiro.session.SessionException;
 import org.apache.shiro.session.mgt.SessionContext;
 import org.apache.shiro.session.mgt.SessionKey;
 import org.apache.shiro.session.mgt.SessionManager;
@@ -42,8 +41,8 @@ public class K2SessionManager implements SessionManager {
   /** Obtains the session from the request wrapped in key.
    */
   @Override
-  public Session getSession(final SessionKey key) throws SessionException {
-    WebSessionKey wk = ((WebSessionKey) key);
+  public Session getSession(final SessionKey key) {
+    WebSessionKey wk = (WebSessionKey) key;
     return new K2Session(cipher, wk.getServletRequest().getRemoteHost(),
         (HttpServletRequest) wk.getServletRequest(),
         (HttpServletResponse) wk.getServletResponse());

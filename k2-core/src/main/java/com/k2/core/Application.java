@@ -68,7 +68,7 @@ public class Application {
    *
    * This is initialized with getApplication().
    */
-  private SpringApplication application = null;
+  private SpringApplication springApplication = null;
 
   /** Indicates if this is a web application, defaults to true.
    *
@@ -112,7 +112,7 @@ public class Application {
    * @param isWeb true if this is a web application, false otherwise.
    */
   public void setWebEnvironment(final boolean isWeb) {
-    Validate.isTrue(application == null,
+    Validate.isTrue(springApplication == null,
         "setWebEnviroment cannot be called after run(...).");
     isWebEnvironment = isWeb;
   }
@@ -173,7 +173,7 @@ public class Application {
    * null.
    */
   public Object getBean(final Class<?> moduleClass, final String beanName) {
-    Validate.notNull(application, "You must call run before this operation");
+    Validate.notNull(springApplication, "You must call run before getBean");
     ModuleDefinition definition = modules.get(moduleClass);
     Validate.notNull(definition, "The module "
         + moduleClass.getSimpleName() + " was not found.");
@@ -191,7 +191,7 @@ public class Application {
    * returns null.
    */
   public Object getBean(final String beanName) {
-    Validate.notNull(application, "You must call run before this operation");
+    Validate.notNull(springApplication, "You must call run before getBean");
     return applicationContext.getBean(beanName);
   }
 
@@ -217,7 +217,7 @@ public class Application {
 
     log.trace("Entering getApplication");
 
-    if (application == null) {
+    if (springApplication == null) {
       log.debug("Creating new k2 application");
 
       SpringApplication app;
@@ -253,10 +253,10 @@ public class Application {
 
       configureInitializers(app);
 
-      application = app;
+      springApplication = app;
     }
     log.trace("Leaving getApplication");
-    return application;
+    return springApplication;
   }
 
   /** Configures the spring boot application initializers that create the

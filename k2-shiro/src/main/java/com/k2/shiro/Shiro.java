@@ -137,7 +137,7 @@ public class Shiro implements RegistryFactory {
 
     Filter filter;
     try {
-      filter = ((Filter) filterFactory.getObject());
+      filter = (Filter) filterFactory.getObject();
     } catch (Exception e) {
       throw new RuntimeException("Error creating shiro filter.", e);
     }

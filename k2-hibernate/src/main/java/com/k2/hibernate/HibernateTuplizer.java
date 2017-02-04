@@ -80,7 +80,7 @@ public class HibernateTuplizer extends PojoEntityTuplizer {
   public static class Instantiator extends PojoEntityInstantiator {
 
     /** The hibernate tuplizer, never null. */
-    private HibernateTuplizer tuplizer;
+    private transient HibernateTuplizer tuplizer;
 
     /** The persistent class to instantiate, never null. */
     private PersistentClass persistentClass;
@@ -120,8 +120,8 @@ public class HibernateTuplizer extends PojoEntityTuplizer {
      * {@inheritDoc}.*/
     @Override
     public Object instantiate() {
-      Object factory = null;
       for (HibernateRegistry registry : tuplizer.registries) {
+        Object factory;
         factory = registry.getFactoryFor(persistentClass.getMappedClass());
         if (factory != null) {
           Method create = ReflectionUtils.findMethod(

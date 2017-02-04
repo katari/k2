@@ -67,5 +67,5 @@ class K2ApplicationContext extends AnnotationConfigApplicationContext {
 
     return beanFactory;
   }
-};
+}
 

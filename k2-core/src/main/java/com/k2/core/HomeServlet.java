@@ -28,7 +28,7 @@ public class HomeServlet extends HttpServlet {
 
   /** The configured landing url, never null.
    */
-  private String landingUrl;
+  private final String landingUrl;
 
   /** Creates the home servlet.
    *

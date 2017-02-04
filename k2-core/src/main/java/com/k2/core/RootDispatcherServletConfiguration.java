@@ -21,4 +21,5 @@ class RootDispatcherServletConfiguration extends WebMvcConfigurationSupport {
     registry.addResourceHandler("/webjars/**")
         .addResourceLocations("classpath:/META-INF/resources/webjars/");
   }
-};
+}
+

@@ -11,7 +11,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -48,7 +47,7 @@ public class K2Session implements ValidatingSession {
 
   /** The session attributes, never null.
    */
-  private Map<Object, Object> attributes = new HashMap<>();
+  private HashMap<Object, Object> attributes = new HashMap<>();
 
   /** Indicates that the session should be stopped.
    *
@@ -78,7 +77,7 @@ public class K2Session implements ValidatingSession {
 
     if (request.getCookies() != null) {
       for (Cookie cookie : this.request.getCookies()) {
-        if (cookie.getName().equals("k2session")) {
+        if ("k2session".equals(cookie.getName())) {
           deserialize(cookie.getValue());
         }
       }
@@ -96,7 +95,7 @@ public class K2Session implements ValidatingSession {
     log.trace("Entering toMap()");
     try (ObjectInputStream ois = new ObjectInputStream(
         new ByteArrayInputStream(cipher.decrypt(value)))) {
-      attributes = (Map<Object, Object>) ois.readObject();
+      attributes = (HashMap<Object, Object>) ois.readObject();
     } catch (ClassNotFoundException | IOException e) {
       log.debug("Could not deserialize session, ignored");
     }
@@ -137,8 +136,7 @@ public class K2Session implements ValidatingSession {
   }
 
   @Override
-  public Object removeAttribute(final Object key)
-      throws InvalidSessionException {
+  public Object removeAttribute(final Object key) {
     Object value = attributes.remove(key);
     return value;
   }
@@ -165,14 +163,13 @@ public class K2Session implements ValidatingSession {
 
   /** Not implemented yet. */
   @Override
-  public long getTimeout() throws InvalidSessionException {
+  public long getTimeout() {
     return 0;
   }
 
   /** Not implemented yet. */
   @Override
-  public void setTimeout(final long maxIdleTimeInMillis)
-      throws InvalidSessionException {
+  public void setTimeout(final long maxIdleTimeInMillis) {
   }
 
   @Override
@@ -182,22 +179,22 @@ public class K2Session implements ValidatingSession {
 
   /** Not implemented yet. */
   @Override
-  public void touch() throws InvalidSessionException {
+  public void touch() {
   }
 
   @Override
-  public void stop() throws InvalidSessionException {
+  public void stop() {
     attributes.clear();
     stopping = true;
   }
 
   @Override
-  public Collection<Object> getAttributeKeys() throws InvalidSessionException {
+  public Collection<Object> getAttributeKeys() {
     return attributes.keySet();
   }
 
   @Override
-  public Object getAttribute(final Object key) throws InvalidSessionException {
+  public Object getAttribute(final Object key) {
     return attributes.get(key);
   }
 
@@ -207,7 +204,7 @@ public class K2Session implements ValidatingSession {
   }
 
   @Override
-  public void validate() throws InvalidSessionException {
+  public void validate() {
     if (stopping) {
       throw new InvalidSessionException("Session was stopped");
     }
