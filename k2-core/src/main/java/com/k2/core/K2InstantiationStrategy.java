@@ -50,14 +50,19 @@ class K2InstantiationStrategy
       final String beanName, final BeanFactory owner) {
 
     Object result;
-    if (instanceBeanName != null && instanceBeanName.equals(beanName)) {
-      result = instance;
-    } else if (instanceBeanName == null
-        && instance.getClass().equals(beanDefinition.getBeanClass())) {
+
+    // True if asking for a bean named instanceBeanName.
+    boolean matchName = beanName != null && beanName.equals(instanceBeanName);
+    // True if asking for a bean of the instance type.
+    boolean matchType = instanceBeanName == null
+      && instance.getClass().equals(beanDefinition.getBeanClass());
+
+    if (matchName || matchType) {
       result = instance;
     } else {
       result = super.instantiate(beanDefinition, beanName, owner);
     }
+
     return result;
   }
 }
