@@ -137,8 +137,7 @@ public class K2Session implements ValidatingSession {
 
   @Override
   public Object removeAttribute(final Object key) {
-    Object value = attributes.remove(key);
-    return value;
+    return attributes.remove(key);
   }
 
   /** This is not relevant, this implementation simply returns the java object

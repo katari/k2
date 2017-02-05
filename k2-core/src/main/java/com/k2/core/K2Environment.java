@@ -70,9 +70,9 @@ public class K2Environment extends StandardServletEnvironment {
    * This operation only considers enumerable property sources, so it ignores
    * jndi and other sources. The prefix defines which properties to include in
    * the result. For example, if there are properties x.a, y.a and xb, a call
-   * to getProperties("a") will return a Properties that only contains the
-   * name "x.a", ie: the prefix is followed by a '.' and the prefix and dot are
-   * not removed from the resulting property name.
+   * to getProperties("x") will return a Properties that only contain the name
+   * "x.a", ie: the prefix is followed by a '.' and the prefix and dot are not
+   * removed from the resulting property name.
    *
    * @param prefix the prefix that the name of the property must start with to
    * be added to the resulting Properties.
