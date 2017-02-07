@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.Validate;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;

@@ -16,7 +16,7 @@ import org.springframework.beans.factory.config
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.context.embedded
     .AnnotationConfigEmbeddedWebApplicationContext;
-import org.springframework.boot.context.embedded.ServletContextInitializer;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 /** The application context that k2 applications create in a web environment.
