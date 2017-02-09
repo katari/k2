@@ -9,13 +9,13 @@
   <parent>
     <groupId>com.github.katari</groupId>
     <artifactId>k2</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>com.github.katari</groupId>
   <artifactId>k2-parent</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.2</version>
   <packaging>pom</packaging>
 
   <dependencies>
