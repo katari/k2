@@ -8,7 +8,7 @@
 
   <groupId>com.github.katari</groupId>
   <artifactId>k2</artifactId>
-  <version>0.0.2</version>
+  <version>0.0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>K2 project aggregator</name>
@@ -41,7 +41,7 @@
       scm:git:git://github.com/katari/k2
     </developerConnection>
     <url>https://github.com/katari/k2</url>
-    <tag>k2-0.0.2</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
