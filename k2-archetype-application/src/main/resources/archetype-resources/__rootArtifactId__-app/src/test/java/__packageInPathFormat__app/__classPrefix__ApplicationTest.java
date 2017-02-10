@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.k2.core.Application;
+import com.k2.core.K2Environment;
 
 public class ${classPrefix}ApplicationTest {
 
@@ -28,10 +29,18 @@ public class ${classPrefix}ApplicationTest {
 
   private Application application;
 
+  private String baseUrl;
+
   @Before public void setUp() {
     log.trace("Entering setUp");
     application = new ${classPrefix}Application();
-    application.run(new String[0]);
+    application.run(new String[] {"--server.port=0"});
+
+    K2Environment environment;
+    environment = (K2Environment) application.getBean("environment");
+    String port = environment.getProperty("local.server.port");
+    baseUrl = "http://localhost:" + port;
+
     log.trace("Leaving setUp");
   }
 
@@ -40,7 +49,7 @@ public class ${classPrefix}ApplicationTest {
   }
 
   @Test public void helloController() throws Exception {
-    String endpoint = "http://localhost:8081/${classPrefix.toLowerCase()}/hi.html";
+    String endpoint = baseUrl + "/${classPrefix.toLowerCase()}/hi.html";
     try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
       scanner.useDelimiter("\\A");
       assertThat(scanner.next(), is("Hello there"));

@@ -67,19 +67,40 @@ public class K2Environment extends StandardServletEnvironment {
 
   /** Returns all the properties that start with the specified prefix.
    *
-   * This operation only considers enumerable property sources, so it ignores
-   * jndi and other sources. The prefix defines which properties to include in
-   * the result. For example, if there are properties x.a, y.a and xb, a call
-   * to getProperties("x") will return a Properties that only contain the name
-   * "x.a", ie: the prefix is followed by a '.' and the prefix and dot are not
-   * removed from the resulting property name.
+   * This is a convenience method that calls
+   *
+   * getProperties(prefix, false)
    *
    * @param prefix the prefix that the name of the property must start with to
-   * be added to the resulting Properties.
+   * be added to the resulting Properties.  It cannot be null nor empty.
    *
    * @return a Properties instance, never returns null.
    */
   public Properties getProperties(final String prefix) {
+    return getProperties(prefix, false);
+  }
+
+  /** Returns all the properties that start with the specified prefix.
+   *
+   * This operation only considers enumerable property sources, so it ignores
+   * jndi and other sources. The prefix defines which properties to include in
+   * the result. For example, if there are properties x.a, y.a and xb, a call
+   * to getProperties("x") will return a Properties that only contain the name
+   * "x.a", ie: the prefix is followed by a '.'.
+   *
+   * @param prefix the prefix that the name of the property must start with to
+   * be added to the resulting Properties. It cannot be null nor empty.
+   *
+   * @param removePrefix if true, the names of the returned properties does not
+   * include the prefix. Otherwise, the prefix and the '.' are removed from the
+   * property names.
+   *
+   * @return a Properties instance, never returns null.
+   */
+  public Properties getProperties(final String prefix,
+      final boolean removePrefix) {
+
+    Validate.notEmpty(prefix, "prefix cannot be null nor empty");
     log.trace("Entering getProperties({})", prefix);
 
     Properties properties = new Properties();
@@ -89,7 +110,13 @@ public class K2Environment extends StandardServletEnvironment {
         source = (EnumerablePropertySource<?>) propertySource;
         for (String name : source.getPropertyNames()) {
           if (name.startsWith(prefix + ".")) {
-            properties.setProperty(name, this.getProperty(name));
+            String propertyName;
+            if (removePrefix) {
+              propertyName = name.substring(prefix.length() + 1);
+            } else {
+              propertyName = name;
+            }
+            properties.setProperty(propertyName, this.getProperty(name));
           }
         }
       } else {

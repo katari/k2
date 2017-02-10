@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import com.k2.core.Application;
 import com.k2.core.ModuleContext;
 import com.k2.core.Registrator;
+import com.k2.core.K2Environment;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -52,16 +53,21 @@ public class ShiroTest {
 
   private Executor executor;
 
-  private static String home = "http://localhost:8081";
-  private static String hiUrl = home + "/test/hi.html";
-  private static String loginUrl = home + "/test/login.html";
-  private static String logoutUrl = home + "/logout";
+  private static String home;
+  private static String hi = "/test/hi.html";
+  private static String login = "/test/login.html";
+  private static String logout = "/logout";
 
   @Before public void setUp() {
     log.trace("Entering setUp");
 
     application = new TestApplication();
-    application.run(new String[] {"--shiro.password=x"});
+    application.run(new String[] {"--server.port=0", "--shiro.password=x"});
+
+    K2Environment environment;
+    environment = (K2Environment) application.getBean("environment");
+    String port = environment.getProperty("local.server.port");
+    home = "http://localhost:" + port;
 
     executor = Executor.newInstance(httpClient);
 
@@ -92,19 +98,20 @@ public class ShiroTest {
     String page;
 
     // Get the hi page, unauthenticated. This should give the login page.
-    page = executor.execute(Request.Get(hiUrl)).returnContent().asString();
+    page = executor.execute(Request.Get(home + hi)).returnContent().asString();
     assertThat(page, startsWith("Hi, who are you?"));
 
     // Attempt a login, this should result in the hi page.
     page = executor.execute(
-        Request.Post(loginUrl).bodyForm(Form.form()
+        Request.Post(home + login).bodyForm(Form.form()
             .add("username", "test").add("password", "test").build())
         ).returnContent().asString();
 
     assertThat(page, startsWith("Hello, test"));
 
     // Logout. This should result in the login page.
-    page = executor.execute(Request.Get(logoutUrl)).returnContent().asString();
+    page = executor.execute(Request.Get(home + logout))
+      .returnContent().asString();
     assertThat(page, startsWith("Hi, who are you?"));
   }
 

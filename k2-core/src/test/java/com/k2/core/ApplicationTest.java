@@ -53,7 +53,7 @@ public class ApplicationTest {
 
   private Application application;
 
-  private String baseUrl = "http://localhost:8081";
+  private String baseUrl = "http://localhost:";
 
   private CloseableHttpClient httpClient = HttpClientBuilder.create()
       .setRedirectStrategy(new LaxRedirectStrategy()).build();
@@ -64,8 +64,12 @@ public class ApplicationTest {
     log.trace("Entering setUp");
     initCalled = false;
     application = new WebApplication();
-    application.run(new String[0]);
+    application.run(new String[] {"--server.port=0"});
 
+    K2Environment environment;
+    environment = (K2Environment) application.getBean("environment");
+    String port = environment.getProperty("local.server.port");
+    baseUrl = baseUrl + port;
     executor = Executor.newInstance(httpClient);
     log.trace("Leaving setUp");
   }
@@ -77,7 +81,7 @@ public class ApplicationTest {
   @Test public void emptyApplication() {
     application.stop();
     Application emptyApplication = new EmptyApplication();
-    emptyApplication.run(new String[0]);
+    emptyApplication.run(new String[] {"--server.port=0"});
     assertThat(emptyApplication.getApplication(), is(not(nullValue())));
     emptyApplication.stop();
   }
@@ -85,7 +89,7 @@ public class ApplicationTest {
   @Test public void emptyApplicationConfigOption() {
     application.stop();
     Application emptyApplication = new EmptyApplication();
-    emptyApplication.run(new String[0]);
+    emptyApplication.run(new String[] {"--server.port=0"});
     assertThat(emptyApplication.getBean("option").toString(),
         is("configOption"));
     emptyApplication.stop();

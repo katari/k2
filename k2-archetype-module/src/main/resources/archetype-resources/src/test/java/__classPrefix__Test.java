@@ -34,7 +34,7 @@ public class ${classPrefix}Test {
   @Before public void setUp() {
     log.trace("Entering setUp");
     application = new TestApplication();
-    application.run(new String[0]);
+    application.run(new String[] {"--server.port=0"});
     log.trace("Leaving setUp");
   }
 
