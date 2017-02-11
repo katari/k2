@@ -3,6 +3,9 @@
 package com.k2.hibernate;
 
 import java.util.EnumSet;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
 
 import org.apache.commons.lang3.Validate;
 
@@ -38,6 +41,12 @@ public class SchemaGenerator {
    * Creates the ddl to the target/schema.ddl directory, works well for maven.
    */
   public void generate() {
+    String ddlFile = "target/schema.ddl";
+    try {
+      Files.deleteIfExists(Paths.get(ddlFile));
+    } catch (IOException e) {
+      throw new RuntimeException("Error deleting " + ddlFile, e);
+    }
     SchemaExport schemaExport = new SchemaExport();
     schemaExport.setDelimiter(";");
     schemaExport.setOutputFile("target/schema.ddl");
