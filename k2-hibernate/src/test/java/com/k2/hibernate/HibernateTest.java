@@ -4,6 +4,10 @@ package com.k2.hibernate;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.After;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -97,6 +102,26 @@ public class HibernateTest {
         is("Entity 2 factory parameter"));
     assertThat(result.get(1).id, is(2L));
     assertThat(result.get(1).value, is("second value"));
+  }
+
+  @Test public void generateSchema() {
+    SchemaGenerator schema;
+    schema = (SchemaGenerator) application.getBean(Hibernate.class, "schema");
+    schema.generate();
+
+    try {
+      Scanner scanner = new Scanner(new File("target/schema.ddl"));
+      String currentLine;
+      while (scanner.hasNext()) {
+        currentLine = scanner.nextLine();
+        if (currentLine.contains("create table testmodule_entity_1")) {
+          return;
+        }
+      }
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException("target/schema.ddl not found", e);
+    }
+    fail("ddl does not have the create table line.");
   }
 
   // Sample class to create beans in the test application.

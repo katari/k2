@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
-import org.apache.tomcat.jdbc.pool.DataSource;
+import org.apache.commons.lang3.Validate;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,8 +15,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.stereotype.Component;
 
-import org.apache.commons.lang3.Validate;
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
+
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -86,19 +87,22 @@ public class Hibernate implements RegistryFactory {
     return txManager;
   }
 
-  /** Hibernate SessionFactory.
+  /** Hibernate metadata.
+   *
+   * The hibernate metadata is initialized from the configuration, module
+   * provided entities and factories. Application writes can use this metadata
+   * to generate the ddl
    *
    * @param environment the enviromnment provided by k2 core, used by hibernate
    * to obtain its properties.
    *
    * @param dataSource the data source, never null.
    *
-   * @return the Hibernate's SessionFactory, never returns null.
+   * @return the Hibernate's metadata, never returns null.
    */
-  @Public @Bean public SessionFactory sessionFactory(
+  @Bean public Metadata metadata(
       final K2Environment environment,
       final DataSource dataSource) {
-
     StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
       .applySetting("hibernate.connection.datasource", dataSource)
       .applySetting("hibernate.current_session_context_class",
@@ -135,6 +139,18 @@ public class Hibernate implements RegistryFactory {
       pc.getMetaAttributes();
     }
 
+    return metadata;
+  }
+
+  /** Hibernate SessionFactory.
+   *
+   * @param metadata the hibernate metadata, initialized with hibernate
+   * configuration and module provided entities and factories. I cannot be
+   * null.
+   *
+   * @return the Hibernate's SessionFactory, never returns null.
+   */
+  @Public @Bean public SessionFactory sessionFactory(final Metadata metadata) {
     return metadata.getSessionFactoryBuilder().build();
   }
 
@@ -159,6 +175,17 @@ public class Hibernate implements RegistryFactory {
    */
   @Bean public DataSource dataSource(final PoolProperties poolProperties) {
     return new DataSource(poolProperties);
+  }
+
+  /** Bean to generate the schema based on hibernate configuration.
+   *
+   * @param metadata the properly initialized hibernate metadata. It cannot be
+   * null.
+   *
+   * @return an instance of SchemaGenerator, never null.
+   */
+  @Bean SchemaGenerator schema(final Metadata metadata) {
+    return new SchemaGenerator(metadata);
   }
 
   /** A hibernate service that exposes the hibernate module registries to the
