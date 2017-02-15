@@ -73,6 +73,18 @@
         </exclusions>
       </dependency>
 
+      <dependency>
+        <groupId>com.github.katari</groupId>
+        <artifactId>k2-hibernate</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.katari</groupId>
+        <artifactId>k2-shiro</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
       <!-- Spring related dependencies. -->
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->

@@ -5,7 +5,10 @@ package com.k2.core;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Properties;
 import java.util.LinkedHashMap;
+
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +30,11 @@ import org.springframework.boot.context.properties
     .EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.context.support
     .AnnotationConfigWebApplicationContext;
 
@@ -234,15 +239,37 @@ public class ModuleDefinition {
         }
       };
 
-      context.setEnvironment(new K2Environment(context.getEnvironment()));
+      final K2Environment environment;
+      environment = new K2Environment(context.getEnvironment());
+      context.setEnvironment(environment);
       context.register(AnnotationHolder.class);
       context.register(moduleInstance.getClass());
+
+      // Resolves ${...} in @Value annotations.
       PropertySourcesPlaceholderConfigurer placeHolderConfigurer =
           new PropertySourcesPlaceholderConfigurer();
       placeHolderConfigurer.setEnvironment(context.getEnvironment());
       context.addBeanFactoryPostProcessor(placeHolderConfigurer);
-      context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
 
+      // Overrides bean properties from values obtained from the spring
+      // environment. We cannot directly pass the K2Environment properties to
+      // the PropertyOverrideConfigurer because it is not yet initialized here.
+      PropertyOverrideConfigurer overrideConfigurer;
+      overrideConfigurer = new PropertyOverrideConfigurer() {
+        /** {@inheritDoc} */
+        @Override
+        protected Properties mergeProperties() throws IOException {
+          Properties properties = super.mergeProperties();
+          CollectionUtils.mergePropertiesIntoMap(environment.getProperties(
+                getModuleName(), true), properties);
+          return properties;
+        }
+      };
+      overrideConfigurer.setIgnoreInvalidKeys(true);
+      context.addBeanFactoryPostProcessor(overrideConfigurer);
+
+      // Exposes the public beans.
+      context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
         /** {@inheritDoc} */
         @Override
         public void postProcessBeanFactory(

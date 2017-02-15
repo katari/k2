@@ -109,8 +109,7 @@ public class HibernateTest {
     schema = (SchemaGenerator) application.getBean(Hibernate.class, "schema");
     schema.generate();
 
-    try {
-      Scanner scanner = new Scanner(new File("target/schema.ddl"));
+    try (Scanner scanner = new Scanner(new File("target/schema.ddl"))) {
       String currentLine;
       while (scanner.hasNext()) {
         currentLine = scanner.nextLine();

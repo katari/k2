@@ -13,9 +13,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.After;
+import org.junit.AfterClass;
+
 import static org.junit.Assert.assertThat;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -51,17 +52,16 @@ public class ApplicationTest {
 
   private static boolean initCalled = false;
 
-  private Application application;
+  private static Application application;
 
-  private String baseUrl = "http://localhost:";
+  private static String baseUrl = "http://localhost:";
 
-  private CloseableHttpClient httpClient = HttpClientBuilder.create()
+  private static CloseableHttpClient httpClient = HttpClientBuilder.create()
       .setRedirectStrategy(new LaxRedirectStrategy()).build();
 
-  private Executor executor;
+  private static Executor executor;
 
-  @Before public void setUp() {
-    log.trace("Entering setUp");
+  @BeforeClass public static void setUp() {
     initCalled = false;
     application = new WebApplication();
     application.run(new String[] {"--server.port=0"});
@@ -71,15 +71,13 @@ public class ApplicationTest {
     String port = environment.getProperty("local.server.port");
     baseUrl = baseUrl + port;
     executor = Executor.newInstance(httpClient);
-    log.trace("Leaving setUp");
   }
 
-  @After public void tearDown() throws InterruptedException {
+  @AfterClass public static void tearDown() throws InterruptedException {
     application.stop();
   }
 
   @Test public void emptyApplication() {
-    application.stop();
     Application emptyApplication = new EmptyApplication();
     emptyApplication.run(new String[] {"--server.port=0"});
     assertThat(emptyApplication.getApplication(), is(not(nullValue())));
@@ -87,7 +85,6 @@ public class ApplicationTest {
   }
 
   @Test public void emptyApplicationConfigOption() {
-    application.stop();
     Application emptyApplication = new EmptyApplication();
     emptyApplication.run(new String[] {"--server.port=0"});
     assertThat(emptyApplication.getBean("option").toString(),
@@ -96,7 +93,6 @@ public class ApplicationTest {
   }
 
   @Test public void standAloneApplication() {
-    application.stop();
     Application standAloneApplication = new StandAloneApplication();
     standAloneApplication.run(new String[0]);
     assertThat(standAloneApplication.getApplication(), is(not(nullValue())));
@@ -106,7 +102,6 @@ public class ApplicationTest {
   }
 
   @Test public void standAloneConfigOption() {
-    application.stop();
     Application standAloneApplication;
     standAloneApplication = new StandAloneApplication();
     standAloneApplication.run(new String[0]);
@@ -203,6 +198,20 @@ public class ApplicationTest {
             + "option1 from module applicationTest.Module3\n"));
   }
 
+  @Test public void propertyOverride() {
+    WithProperties withProperties = (WithProperties) application.getBean(
+        Module1.class, "withProperties");
+    assertThat(withProperties.getValue1(), is("Overriden value 1"));
+    assertThat(withProperties.getValue2(), is("Initial value 2"));
+  }
+
+  @Test public void propertyOverride_moduleWithDot() {
+    WithProperties withProperties = (WithProperties) application.getBean(
+        Module2.class, "withProperties");
+    assertThat(withProperties.getValue1(), is("Initial value 1"));
+    assertThat(withProperties.getValue2(), is("Overriden value 2"));
+  }
+
   // Sample class to create beans in the test application.
   public static class StringHolder {
     private String value;
@@ -231,6 +240,30 @@ public class ApplicationTest {
 
     String getOption() {
       return configuration + " from module " + requestor.getModuleName();
+    }
+  };
+
+  /* A class with properties, to test the PropertyOverrideConfigurer.
+   */
+  public static class WithProperties {
+
+    private String value1;
+    private String value2;
+
+    public void setValue1(final String value) {
+      value1 = value;
+    }
+
+    public String getValue1() {
+      return value1;
+    }
+
+    public void setValue2(final String value) {
+      value2 = value;
+    }
+
+    public String getValue2() {
+      return value2;
     }
   };
 
@@ -266,6 +299,13 @@ public class ApplicationTest {
       for (Module1Registry registry : registries) {
         result += registry.getOption() + "\n";
       }
+      return result;
+    }
+
+    @Bean public WithProperties withProperties() {
+      WithProperties result = new WithProperties();
+      result.setValue1("Initial value 1");
+      result.setValue2("Initial value 2");
       return result;
     }
   };
@@ -355,6 +395,13 @@ public class ApplicationTest {
       filter.setOrder(1);
       return filter;
     }
+
+    @Bean public WithProperties withProperties() {
+      WithProperties result = new WithProperties();
+      result.setValue1("Initial value 1");
+      result.setValue2("Initial value 2");
+      return result;
+    }
   };
 
   public static class Module3 implements Registrator {
@@ -377,8 +424,8 @@ public class ApplicationTest {
     }
 
     public static void main(final String ... args) {
-      Application application = new WebApplication();
-      application.run(new String[0]);
+      Application webApplication = new WebApplication();
+      webApplication.run(new String[0]);
     }
 
     @Bean public String globalBean() {
