@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <!-- The aggregator pom. -->
@@ -59,6 +58,7 @@
     <module>k2-archetype-module</module>
     <module>k2-build-tools</module>
     <module>k2-shiro</module>
+    <module>k2-maven-plugin</module>
   </modules>
 
   <build>
@@ -109,4 +109,3 @@
   <!-- vim: set ts=2 et sw=2 ai: -->
 
 </project>
-
