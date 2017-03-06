@@ -90,10 +90,10 @@ public class Hibernate implements RegistryFactory {
   /** Hibernate metadata.
    *
    * The hibernate metadata is initialized from the configuration, module
-   * provided entities and factories. Application writes can use this metadata
-   * to generate the ddl
+   * provided entities and factories. Application writers can use this metadata
+   * to generate the ddl.
    *
-   * @param environment the enviromnment provided by k2 core, used by hibernate
+   * @param environment the environment provided by k2 core, used by hibernate
    * to obtain its properties.
    *
    * @param dataSource the data source, never null.
