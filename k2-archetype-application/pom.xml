@@ -13,7 +13,6 @@
     <relativePath>../k2-parent/pom.xml</relativePath>
   </parent>
 
-  <groupId>com.github.katari</groupId>
   <artifactId>k2-archetype-application</artifactId>
   <packaging>maven-archetype</packaging>
 

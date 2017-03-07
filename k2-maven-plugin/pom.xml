@@ -13,7 +13,6 @@
     <relativePath>../k2-parent/pom.xml</relativePath>
   </parent>
 
-  <groupId>com.github.katari</groupId>
   <artifactId>k2-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
 
@@ -26,53 +25,35 @@
   <dependencies>
 
     <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-    <!-- k2 related dependencies -->
-    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-    <!-- dependency>
-      <groupId>com.github.katari</groupId>
-      <artifactId>k2-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.katari</groupId>
-      <artifactId>k2-hibernate</artifactId>
-    </dependency -->
-
-    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
     <!-- Maven related dependencies -->
     <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>3.3.9</version>
     </dependency>
+    
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>3.2</version>
       <scope>provided</scope>
     </dependency>
+    
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-project</artifactId>
-      <version>2.2.1</version>
     </dependency>
+    
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
-      <version>3.3.9</version>
     </dependency>
 
-    <!-- dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-utils</artifactId>
-      <version>3.0.24</version>
-    </dependency -->
-
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Test dependencies -->
+    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
