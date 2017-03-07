@@ -163,6 +163,63 @@
       </dependency>
 
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <!-- Api related dependencies (swagger) -->
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-annotations</artifactId>
+        <version>1.5.12</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>swagger-ui</artifactId>
+        <version>2.2.10-1</version>
+      </dependency>
+
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <!-- Validation related dependencies (swagger) -->
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <dependency>
+        <groupId>javax.validation</groupId>
+        <artifactId>validation-api</artifactId>
+        <version>1.1.0.Final</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <version>5.4.0.Final</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.el</groupId>
+        <artifactId>javax.el-api</artifactId>
+        <version>2.2.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.glassfish.web</groupId>
+        <artifactId>javax.el</artifactId>
+        <version>2.2.4</version>
+      </dependency>
+
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <!-- Json related dependencies -->
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>2.8.7</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.8.7</version>
+      </dependency>
+
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
       <!-- Apache shiro dependencies -->
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
       <dependency>
@@ -308,6 +365,13 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>1.3</version>
+        <scope>test</scope>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -319,12 +383,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.17</version>
         <executions>
           <!-- Fails build if checkstyle fails. -->
           <execution>
             <id>check</id>
-            <phase>process-sources</phase>
+            <phase>verify</phase>
             <goals><goal>check</goal></goals>
 
             <configuration>
@@ -438,6 +501,28 @@
           <version>${spring-boot.version}</version>
         </plugin>
 
+        <!--this plugin's configuration is used to store eclipse m2e settings
+        only. it has no influence on the maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <versionRange>[2.17,)</versionRange>
+                    <goals><goal>check</goal></goals>
+                  </pluginExecutionFilter>
+                  <action><ignore></ignore></action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -452,7 +537,9 @@
     <!-- Sonar -->
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-    <sonar.jacoco.reportPaths>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPaths>
+    <sonar.jacoco.reportPaths>
+      ${project.basedir}/../target/jacoco.exec
+    </sonar.jacoco.reportPaths>
     <sonar.language>java</sonar.language>
   </properties>
 

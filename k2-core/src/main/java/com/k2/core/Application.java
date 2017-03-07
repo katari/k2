@@ -107,7 +107,8 @@ public class Application {
   /** Determines if this is a web application.
    *
    * If true, k2 will initialize jetty as an embedded web server. Can only be
-   * called before run().
+   * called before run(). K2 assumes that is running a web application by
+   * default.
    *
    * @param isWeb true if this is a web application, false otherwise.
    */

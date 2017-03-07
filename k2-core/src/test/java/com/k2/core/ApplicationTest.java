@@ -56,9 +56,6 @@ public class ApplicationTest {
 
   private static String baseUrl = "http://localhost:";
 
-  private static CloseableHttpClient httpClient = HttpClientBuilder.create()
-      .setRedirectStrategy(new LaxRedirectStrategy()).build();
-
   private static Executor executor;
 
   @BeforeClass public static void setUp() {
@@ -70,6 +67,9 @@ public class ApplicationTest {
     environment = (K2Environment) application.getBean("environment");
     String port = environment.getProperty("local.server.port");
     baseUrl = baseUrl + port;
+
+    CloseableHttpClient httpClient = HttpClientBuilder.create()
+      .setRedirectStrategy(new LaxRedirectStrategy()).build();
     executor = Executor.newInstance(httpClient);
   }
 
@@ -425,7 +425,7 @@ public class ApplicationTest {
 
     public static void main(final String ... args) {
       Application webApplication = new WebApplication();
-      webApplication.run(new String[0]);
+      webApplication.run(args);
     }
 
     @Bean public String globalBean() {

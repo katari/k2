@@ -58,6 +58,7 @@
     <module>k2-archetype-module</module>
     <module>k2-build-tools</module>
     <module>k2-shiro</module>
+    <module>k2-swagger</module>
     <module>k2-maven-plugin</module>
   </modules>
 

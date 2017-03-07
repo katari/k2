@@ -20,8 +20,9 @@ import org.springframework.context.support
 /** Custom configuration for the dispatcher servlet application context
  *
  * K2 uses this configuration to initialize the dispatcher servlet if the
- * application runs in a web environment
- * {@see Application#setWebEnvironment(boolean)}.
+ * application runs in a web environment.
+ *
+ * @see com.k2.core.Application#setWebEnvironment(boolean)
  */
 @Configuration
 public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {

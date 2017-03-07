@@ -89,12 +89,14 @@
         </configuration>
         <executions>
           <execution>
+            <?m2e execute onConfiguration?>
             <id>mojo-descriptor</id>
             <goals>
               <goal>descriptor</goal>
             </goals>
           </execution>
           <execution>
+            <?m2e execute onConfiguration?>
             <id>help-goal</id>
             <goals>
               <goal>helpmojo</goal>

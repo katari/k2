@@ -5,6 +5,10 @@
     "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
 
 <suppressions>
+
+  <!-- Do not check any generated file. -->
+  <suppress files="[/\\]target[/\\]" checks=".*"/>
+
   <!-- Exclusions for tests only. -->
   <suppress checks="AvoidStarImport" files=".*(Test|Mother)\.java"/>
   <suppress checks="MethodName" files=".*(Test|Mother)\.java"/>
