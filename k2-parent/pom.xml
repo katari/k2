@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.github.katari</groupId>
     <artifactId>k2</artifactId>
-    <version>0.0.5-SNAPSHOT</version>
+    <version>0.0.5</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -543,7 +543,7 @@
                     <versionRange>[2.17,)</versionRange>
                     <goals><goal>check</goal></goals>
                   </pluginExecutionFilter>
-                  <action><ignore></ignore></action>
+                  <action><ignore /></action>
                 </pluginExecution>
               </pluginExecutions>
             </lifecycleMappingMetadata>
