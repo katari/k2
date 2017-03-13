@@ -10,6 +10,8 @@
   <suppress files="[/\\]target[/\\]" checks=".*"/>
 
   <!-- Exclusions for tests only. -->
+  <suppress checks="MagicNumber" files=".*(Test|Mother)\.java"/>
+
   <suppress checks="AvoidStarImport" files=".*(Test|Mother)\.java"/>
   <suppress checks="MethodName" files=".*(Test|Mother)\.java"/>
   <suppress checks="JavadocType" files=".*(Test|Mother)\.java"/>
