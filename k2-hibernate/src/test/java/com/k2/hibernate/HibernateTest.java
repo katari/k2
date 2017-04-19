@@ -67,8 +67,8 @@ public class HibernateTest {
   }
 
   @Test public void save() {
-    EntityRepository repo = (EntityRepository) application.getBean(
-        "testmodule.entity1Repository");
+    EntityRepository repo = application.getBean(
+        "testmodule.entity1Repository", EntityRepository.class);
 
     repo.save(new Entity1("first value"));
     repo.save(new Entity1("second value"));
@@ -82,8 +82,8 @@ public class HibernateTest {
   }
 
   @Test public void save_withFactory() {
-    EntityRepository repo = (EntityRepository) application.getBean(
-        "testmodule.entity1Repository");
+    EntityRepository repo = application.getBean(
+        "testmodule.entity1Repository", EntityRepository.class);
 
     Entity2Factory factory = (Entity2Factory) application.getBean(
         Module1.class, "entity2Factory");

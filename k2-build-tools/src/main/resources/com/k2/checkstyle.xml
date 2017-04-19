@@ -13,6 +13,18 @@
     <property name="file" value="${checkstyle.suppressions.file}"/>
   </module>
 
+  <!-- Ignore checkstyle for lines between CHECKSTYLE:OFF and
+       CHECKSTYLE:ON -->
+  <module name="SuppressionCommentFilter">
+    <!-- property name="offCommentFormat" value="CHECKSTYLE:RELAX"/>
+    <property name="onCommentFormat" value="CHECKSTYLE:ON"/ -->
+
+    <property name="offCommentFormat" value="CHECKSTYLE-OFF\: ([\w\|]+)"/>
+    <property name="onCommentFormat" value="CHECKSTYLE-ON\: ([\w\|]+)"/>
+
+    <property name="checkFormat" value="MagicNumber"/>
+  </module>
+
   <!-- Checks that a package.html file exists for each package. Disabled
   because it is very difficult to write meaningful package.html files. -->
   <!-- module name="PackageHtml">
@@ -39,6 +51,9 @@
   <module name="TreeWalker">
 
     <property name="cacheFile" value="${checkstyle.cache.file}"/>
+
+    <!-- this is needed by the SuppressionCommentFilter -->
+    <module name="FileContentsHolder"/>
 
     <!-- Checks for Javadoc comments. -->
     <module name="JavadocMethod">

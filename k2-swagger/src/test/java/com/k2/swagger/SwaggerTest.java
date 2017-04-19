@@ -49,7 +49,7 @@ public class SwaggerTest {
     application.run(new String[] {"--server.port=0"});
 
     K2Environment environment;
-    environment = (K2Environment) application.getBean("environment");
+    environment = application.getBean("environment", K2Environment.class);
     String port = environment.getProperty("local.server.port");
     baseUrl = baseUrl + port;
 

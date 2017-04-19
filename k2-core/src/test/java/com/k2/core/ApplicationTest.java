@@ -64,7 +64,7 @@ public class ApplicationTest {
     application.run(new String[] {"--server.port=0"});
 
     K2Environment environment;
-    environment = (K2Environment) application.getBean("environment");
+    environment = application.getBean("environment", K2Environment.class);
     String port = environment.getProperty("local.server.port");
     baseUrl = baseUrl + port;
 
@@ -87,7 +87,7 @@ public class ApplicationTest {
   @Test public void emptyApplicationConfigOption() {
     Application emptyApplication = new EmptyApplication();
     emptyApplication.run(new String[] {"--server.port=0"});
-    assertThat(emptyApplication.getBean("option").toString(),
+    assertThat(emptyApplication.getBean("option", String.class),
         is("configOption"));
     emptyApplication.stop();
   }
@@ -105,7 +105,7 @@ public class ApplicationTest {
     Application standAloneApplication;
     standAloneApplication = new StandAloneApplication();
     standAloneApplication.run(new String[0]);
-    assertThat(standAloneApplication.getBean("option").toString(),
+    assertThat(standAloneApplication.getBean("option", String.class),
         is("configOption"));
     standAloneApplication.stop();
   }
@@ -128,18 +128,18 @@ public class ApplicationTest {
   }
 
   @Test public void run_globalBean() {
-    assertThat(application.getBean("globalBean").toString(),
+    assertThat(application.getBean("globalBean", String.class),
         is("Global bean"));
   }
 
   @Test public void run_exposedBean() {
-    assertThat(application.getBean("testmodule.exposedBean")
-        .toString(), is("Module 1 exposed bean"));
+    assertThat(application.getBean("testmodule.exposedBean",
+        StringHolder.class).toString(), is("Module 1 exposed bean"));
   }
 
   @Test public void run_renamedExposedBean() {
-    assertThat(application.getBean("testmodule.renamedExposedBean")
-        .toString(), is("Module 1 renamed exposed bean"));
+    assertThat(application.getBean("testmodule.renamedExposedBean",
+          StringHolder.class).toString(), is("Module 1 renamed exposed bean"));
   }
 
   @Test public void run_injectedWithExposedBean() {

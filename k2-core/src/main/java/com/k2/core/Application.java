@@ -185,15 +185,21 @@ public class Application {
    *
    * This can only be called after run().
    *
+   * @param <T> the type of object to return.
+   *
    * @param beanName the name of the bean to obtain. It cannot be null. The
    * global application context must have a bean with this name.
+   *
+   * @param requiredType type the bean must match; can be an interface or
+   * superclass. It cannot be null.
    *
    * @return the bean named beanName in the global application context. Never
    * returns null.
    */
-  public Object getBean(final String beanName) {
+  public <T> T getBean(final String beanName, final Class<T> requiredType) {
     Validate.notNull(springApplication, "You must call run before getBean");
-    return applicationContext.getBean(beanName);
+    Validate.notNull(requiredType, "The required type cannot be null.");
+    return applicationContext.getBean(beanName, requiredType);
   }
 
   /** Calls addRegistrations on all modules that implement Registrator.
