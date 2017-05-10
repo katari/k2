@@ -44,7 +44,8 @@ public class ${classPrefix}Test {
 
   @Test public void getModuleBean() throws Exception {
     assertThat(application.getBean(${classPrefix}.class,
-          "${classPrefix.toLowerCase()}"), is(not(nullValue())));
+          "${classPrefix.toLowerCase()}", Object.class),
+        is(not(nullValue())));
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -59,7 +60,7 @@ public class ${classPrefix}Test {
 
     public static void main(final String ... args) {
       Application application = new TestApplication();
-      application.run(new String[0]);
+      application.run(args);
     }
   }
 }

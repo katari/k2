@@ -48,6 +48,7 @@ public class SchemaGenerator {
       throw new RuntimeException("Error deleting " + ddlFile, e);
     }
     SchemaExport schemaExport = new SchemaExport();
+    schemaExport.setFormat(true);
     schemaExport.setDelimiter(";");
     schemaExport.setOutputFile("target/schema.ddl");
     schemaExport.execute(EnumSet.of(TargetType.SCRIPT),

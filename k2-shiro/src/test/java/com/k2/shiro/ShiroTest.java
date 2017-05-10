@@ -79,17 +79,17 @@ public class ShiroTest {
   }
 
   @Test public void getModuleBean() throws Exception {
-    assertThat(application.getBean(Shiro.class, "shiro"),
+    assertThat(application.getBean(Shiro.class, "shiro", Object.class),
         is(not(nullValue())));
   }
 
   @Test public void securityManager() {
-    assertThat(application.getBean(Shiro.class, "securityManager"),
-        is(not(nullValue())));
+    assertThat(application.getBean(Shiro.class, "securityManager",
+        Object.class), is(not(nullValue())));
   }
 
   @Test public void shiroFilter() {
-    assertThat(application.getBean(Shiro.class, "shiroFilter"),
+    assertThat(application.getBean(Shiro.class, "shiroFilter", Object.class),
         is(not(nullValue())));
   }
 

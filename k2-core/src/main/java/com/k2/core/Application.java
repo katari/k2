@@ -164,8 +164,13 @@ public class Application {
    *
    * This can only be called after run().
    *
+   * @param <T> the type of object to return.
+   *
    * @param moduleClass the class that configured the module. It cannot be
    * null. It must correspond to a registered module.
+   *
+   * @param requiredType type the bean must match; can be an interface or
+   * superclass. It cannot be null.
    *
    * @param beanName the name of the bean to obtain. It cannot be null. The
    * module application context must have a bean with this name.
@@ -173,12 +178,15 @@ public class Application {
    * @return the bean named beanName in the corresponding module. Never returns
    * null.
    */
-  public Object getBean(final Class<?> moduleClass, final String beanName) {
+  public <T> T getBean(final Class<?> moduleClass, final String beanName,
+      final Class<T> requiredType) {
     Validate.notNull(springApplication, "You must call run before getBean");
+    Validate.notNull(requiredType, "The required type cannot be null.");
+
     ModuleDefinition definition = modules.get(moduleClass);
     Validate.notNull(definition, "The module "
         + moduleClass.getSimpleName() + " was not found.");
-    return definition.getContext().getBean(beanName);
+    return definition.getContext().getBean(beanName, requiredType);
   }
 
   /** Obtains a bean from the global application context.

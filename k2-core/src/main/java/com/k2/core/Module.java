@@ -19,6 +19,23 @@ import java.lang.annotation.ElementType;
 @Target(ElementType.TYPE)
 public @interface Module {
 
+  /** The default value for the short name.
+   *
+   * This is default value indicates that the module writer did not specified
+   * any short name, so ModuleDefinition.getModuleShortName will return null.
+   */
+  String NO_SHORT_NAME = "SHORT_NAME_NOT_SPECIFIED";
+
+  /** Defines a short name for the module.
+   *
+   * Other modules may use this short name to different purposes, for example,
+   * Hibernate module uses this as a prefix for the module tables.
+   *
+   * @return the short name for the module, it may be the constant
+   * NO_SHORT_NAME when not specified. Never null.
+   */
+  String shortName() default NO_SHORT_NAME;
+
   /** Indicates the file system relative path of the module resources.
    *
    * This is used in debug mode to tell k2 where to find resources in

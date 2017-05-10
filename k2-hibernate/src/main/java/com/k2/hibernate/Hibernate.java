@@ -5,10 +5,11 @@ package com.k2.hibernate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import java.util.HashMap;
 
 import org.apache.commons.lang3.Validate;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
@@ -21,11 +22,15 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataBuilder;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.MetaAttribute;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Table;
+import org.hibernate.mapping.Table.ForeignKeyKey;
 import org.hibernate.service.Service;
 
 import com.k2.core.K2Environment;
@@ -51,6 +56,20 @@ import com.k2.core.Public;
  *
  * This module will read all the properties that start with 'hibernate.' and
  * use them to configure the session factory.
+ *
+ * It also implements a custom hibernate naming strategy: all lower case
+ * symbols and underscore separated words. It attempts to create indexes and
+ * primary keys with a recognizable name. The downside is that it generates
+ * pretty long names, so not all databases support it. You can fall back to
+ * hibernate default by setting the hibernate.k2.useK2Naming property to false.
+ *
+ * The module reads the following properties:
+ *
+ * hibernate.k2.usePrefix: if true, adds the module short name to each table
+ * and foreign key name. Defaults to true.
+ *
+ * hibernate.k2.useK2Naming: if true, uses the k2 database naming convention:
+ * all lower case, underscore separated.
  */
 @Component("hibernate")
 @PropertySource("classpath:/com/k2/hibernate/hibernate.properties")
@@ -96,12 +115,20 @@ public class Hibernate implements RegistryFactory {
    * @param environment the environment provided by k2 core, used by hibernate
    * to obtain its properties.
    *
+   * @param useK2Naming true to use the k2 database naming conventions. False
+   * uses hibernate default.
+   *
+   * @param usePrefix true to add the module short name as a prefix to each
+   * database object. Defaults to true.
+   *
    * @param dataSource the data source, never null.
    *
    * @return the Hibernate's metadata, never returns null.
    */
   @Bean public Metadata metadata(
       final K2Environment environment,
+      @Value("${hibernate.k2.useK2Naming:#{true}}") final boolean useK2Naming,
+      @Value("${hibernate.k2.usePrefix:#{true}}") final boolean usePrefix,
       final DataSource dataSource) {
     StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
       .applySetting("hibernate.connection.datasource", dataSource)
@@ -120,23 +147,37 @@ public class Hibernate implements RegistryFactory {
         prefixes.put(entity, hibernateRegistry.getRequestorPrefix());
       }
     }
-    Metadata metadata = metadataSources.getMetadataBuilder()
-      /*
-      .applyImplicitNamingStrategy(
-          ImplicitNamingStrategyJpaCompliantImpl.INSTANCE) */
-      .build();
+
+    MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder()
+        .enableNewIdentifierGeneratorSupport(false);
+    if (useK2Naming) {
+      metadataBuilder
+        .applyImplicitNamingStrategy(new K2DbImplicitNamingStrategy());
+    }
+    Metadata metadata = metadataBuilder.build();
 
     for (PersistentClass pc : metadata.getEntityBindings()) {
+      Table table = pc.getTable();
       String prefix = prefixes.get(pc.getMappedClass());
-      pc.getTable().setName(prefix + "_" + pc.getTable().getName());
+
+      if (usePrefix) {
+        // Add the module prefix to the table name.
+        table.setName(prefix + "_" + table.getName());
+
+        // Add the module prefix to each foreign key name.
+        for (Map.Entry<ForeignKeyKey, ForeignKey> entry
+            : table.getForeignKeys().entrySet()) {
+          ForeignKey foreignKey = entry.getValue();
+          foreignKey.setName(prefix + "_" + foreignKey.getName());
+        }
+      }
+
       pc.addTuplizer(EntityMode.POJO, HibernateTuplizer.class.getName());
 
       MetaAttribute attribute = new MetaAttribute("k2.moduleContext");
       Map<String, MetaAttribute> attributes = new HashMap<>();
       attributes.put("k2.moduleContext",  attribute);
       pc.setMetaAttributes(attributes);
-
-      pc.getMetaAttributes();
     }
 
     return metadata;

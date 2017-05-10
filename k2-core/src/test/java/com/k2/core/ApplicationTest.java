@@ -96,8 +96,8 @@ public class ApplicationTest {
     Application standAloneApplication = new StandAloneApplication();
     standAloneApplication.run(new String[0]);
     assertThat(standAloneApplication.getApplication(), is(not(nullValue())));
-    assertThat(standAloneApplication.getBean(Module1.class, "testBean")
-        .toString(), is("Module 1 private bean"));
+    assertThat(standAloneApplication.getBean(Module1.class, "testBean",
+        Object.class).toString(), is("Module 1 private bean"));
     standAloneApplication.stop();
   }
 
@@ -123,8 +123,8 @@ public class ApplicationTest {
   }
 
   @Test public void run_privateBean() {
-    assertThat(application.getBean(Module1.class, "testBean").toString(),
-        is("Module 1 private bean"));
+    assertThat(application.getBean(Module1.class, "testBean", Object.class)
+        .toString(), is("Module 1 private bean"));
   }
 
   @Test public void run_globalBean() {
@@ -144,19 +144,19 @@ public class ApplicationTest {
 
   @Test public void run_injectedWithExposedBean() {
     assertThat(
-        application.getBean(Module2.class, "dependencyOnModule1")
+        application.getBean(Module2.class, "dependencyOnModule1", Object.class)
         .toString(), is("Module 2 dependency on Module 1 exposed bean"));
   }
 
   @Test public void moduleName_configured() {
-    assertThat(application.getBean(Module1.class, "testmodule"),
+    assertThat(application.getBean(Module1.class, "testmodule", Object.class),
         is(not(nullValue())));
   }
 
   @Test public void moduleName_default() {
     assertThat(
-        application.getBean(Module2.class, "applicationTest.Module2"),
-        is(not(nullValue())));
+        application.getBean(Module2.class, "applicationTest.Module2",
+            Object.class), is(not(nullValue())));
   }
 
   @Test public void staticTest() throws Exception {
@@ -193,21 +193,22 @@ public class ApplicationTest {
   }
 
   @Test public void moduleConfiguration() {
-    assertThat(application.getBean(Module1.class, "configuration").toString(),
+    assertThat(application.getBean(Module1.class, "configuration",
+        Object.class).toString(),
         is("option1 from module applicationTest.Module2\n"
             + "option1 from module applicationTest.Module3\n"));
   }
 
   @Test public void propertyOverride() {
-    WithProperties withProperties = (WithProperties) application.getBean(
-        Module1.class, "withProperties");
+    WithProperties withProperties = application.getBean(
+        Module1.class, "withProperties", WithProperties.class);
     assertThat(withProperties.getValue1(), is("Overriden value 1"));
     assertThat(withProperties.getValue2(), is("Initial value 2"));
   }
 
   @Test public void propertyOverride_moduleWithDot() {
-    WithProperties withProperties = (WithProperties) application.getBean(
-        Module2.class, "withProperties");
+    WithProperties withProperties = application.getBean(
+        Module2.class, "withProperties", WithProperties.class);
     assertThat(withProperties.getValue1(), is("Initial value 1"));
     assertThat(withProperties.getValue2(), is("Overriden value 2"));
   }

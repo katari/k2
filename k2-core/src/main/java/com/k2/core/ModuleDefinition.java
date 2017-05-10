@@ -108,6 +108,21 @@ public class ModuleDefinition {
     return name;
   }
 
+  /** Returns the module short name, as specified by the @Module annotation.
+   *
+   * @return the module short name, or null if not specified.
+   */
+  public String getModuleShortName() {
+    Class<?> moduleClass = moduleInstance.getClass();
+
+    String shortName = null;
+    Module module = moduleClass.getAnnotation(Module.class);
+    if (module != null && !Module.NO_SHORT_NAME.equals(module.shortName())) {
+      shortName = module.shortName();
+    }
+    return shortName;
+  }
+
   /** Obtains a bean of the specified type from the application context of this
    * module.
    *

@@ -29,15 +29,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.k2.core.Application;
+import com.k2.core.Module;
 import com.k2.core.ModuleContext;
 import com.k2.core.Public;
 import com.k2.core.Registrator;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Table;
-import javax.persistence.Id;
-import javax.persistence.Transient;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -53,7 +48,7 @@ public class HibernateTest {
   @Before public void setUp() {
     log.trace("Entering setUp");
     application = new TestApplication();
-    application.run(new String[0]);
+    application.run(new String[] {"--server.port=0"});
     log.trace("Leaving setUp");
   }
 
@@ -62,7 +57,8 @@ public class HibernateTest {
   }
 
   @Test public void initialize() {
-    assertThat(application.getBean(Hibernate.class, "sessionFactory"),
+    assertThat(
+        application.getBean(Hibernate.class, "sessionFactory", Object.class),
         is(not(nullValue())));
   }
 
@@ -75,45 +71,45 @@ public class HibernateTest {
     List<Entity1> result = repo.listEntity1();
 
     assertThat(result.size(), is(2));
-    assertThat(result.get(0).id, is(1L));
-    assertThat(result.get(0).value, is("first value"));
-    assertThat(result.get(1).id, is(2L));
-    assertThat(result.get(1).value, is("second value"));
+    assertThat(result.get(0).getId(), is(1L));
+    assertThat(result.get(0).getValue(), is("first value"));
+    assertThat(result.get(1).getId(), is(2L));
+    assertThat(result.get(1).getValue(), is("second value"));
   }
 
   @Test public void save_withFactory() {
     EntityRepository repo = application.getBean(
         "testmodule.entity1Repository", EntityRepository.class);
 
-    Entity2Factory factory = (Entity2Factory) application.getBean(
-        Module1.class, "entity2Factory");
+    Entity2Factory factory = application.getBean(Module1.class,
+        "entity2Factory", Entity2Factory.class);
 
     repo.save(factory.create("first value"));
     repo.save(factory.create("second value"));
     List<Entity2> result = repo.listEntity2();
 
     assertThat(result.size(), is(2));
-    assertThat(result.get(0).parameter.toString(),
+    assertThat(result.get(0).getParameter().toString(),
         is("Entity 2 factory parameter"));
-    assertThat(result.get(0).id, is(1L));
-    assertThat(result.get(0).value, is("first value"));
+    assertThat(result.get(0).getId(), is(1L));
+    assertThat(result.get(0).getValue(), is("first value"));
 
-    assertThat(result.get(1).parameter.toString(),
+    assertThat(result.get(1).getParameter().toString(),
         is("Entity 2 factory parameter"));
-    assertThat(result.get(1).id, is(2L));
-    assertThat(result.get(1).value, is("second value"));
+    assertThat(result.get(1).getId(), is(2L));
+    assertThat(result.get(1).getValue(), is("second value"));
   }
 
   @Test public void generateSchema() {
-    SchemaGenerator schema;
-    schema = (SchemaGenerator) application.getBean(Hibernate.class, "schema");
+    SchemaGenerator schema = application.getBean(Hibernate.class, "schema",
+        SchemaGenerator.class);
     schema.generate();
 
     try (Scanner scanner = new Scanner(new File("target/schema.ddl"))) {
       String currentLine;
       while (scanner.hasNext()) {
         currentLine = scanner.nextLine();
-        if (currentLine.contains("create table testmodule_entity_1")) {
+        if (currentLine.contains("create table tm_entity_1")) {
           return;
         }
       }
@@ -141,6 +137,7 @@ public class HibernateTest {
   /////////////////////////////////////////////////////////////////////
   @EnableTransactionManagement(proxyTargetClass = true)
   @Configuration("testmodule")
+  @Module(shortName = "tm")
   public static class Module1 implements Registrator {
 
     @Override
@@ -150,6 +147,7 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity1.class);
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
+      hibernateRegistry.registerPersistentClass(Entity3.class);
     }
 
     @Bean @Public public EntityRepository entity1Repository(
@@ -164,43 +162,6 @@ public class HibernateTest {
     @Bean public Entity2Factory entity2Factory(
         @Qualifier("parameter") final StringHolder parameter) {
       return new Entity2Factory(parameter);
-    }
-  };
-
-  /////////////////////////////////////////////////////////////////////
-  ///////////    The entities /////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////
-  @Entity
-  @Table(name = "entity_1")
-  public static class Entity1 {
-
-    @Id @GeneratedValue private long id;
-    private String value;
-
-    Entity1() {
-    }
-    Entity1(final String theValue) {
-      value = theValue;
-    }
-  };
-
-  @Entity
-  @Table(name = "entity_2")
-  public static class Entity2 {
-
-    @Transient
-    private StringHolder parameter;
-
-    @Id @GeneratedValue private long id;
-    private String value;
-
-    Entity2(final StringHolder param) {
-      parameter = param;
-    }
-
-    Entity2(final StringHolder param, final String theValue) {
-      parameter = param;
-      value = theValue;
     }
   };
 
@@ -243,7 +204,7 @@ public class HibernateTest {
       session.save(instance);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     public List<Entity1> listEntity1() {
       Session session = sessionFactory.getCurrentSession();
       return session.createCriteria(Entity1.class)
@@ -251,10 +212,10 @@ public class HibernateTest {
           .list();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     public List<Entity2> listEntity2() {
       Session session = sessionFactory.getCurrentSession();
-      return session.createCriteria(Entity2.class)
+      return session.createCriteria("com.k2.hibernate.Entity2")
           .addOrder(Order.asc("id"))
           .list();
     }

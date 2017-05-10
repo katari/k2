@@ -124,7 +124,11 @@ public class HibernateRegistry {
    * @return a string with the table prefix, never null.
    */
   String getRequestorPrefix() {
-    return requestor.getModuleName();
+    String prefix = requestor.getModuleShortName();
+    if (prefix == null) {
+      prefix = requestor.getModuleName();
+    }
+    return prefix;
   }
 }
 
