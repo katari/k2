@@ -38,10 +38,19 @@ public class SchemaGenerator {
 
   /** Generates the database schema from hibernate metadata.
    *
-   * Creates the ddl to the target/schema.ddl directory, works well for maven.
+   * Creates the ddl in the target/schema.ddl directory.
    */
   public void generate() {
-    String ddlFile = "target/schema.ddl";
+    generate("target/schema.ddl");
+  }
+
+  /** Generates the database schema from hibernate metadata.
+   *
+   * @param ddlFile the name of the file where the generator will create
+   * with the database schema. It cannot be null.
+   */
+  public void generate(final String ddlFile) {
+    Validate.notNull(ddlFile, "The file name cannot be null.");
     try {
       Files.deleteIfExists(Paths.get(ddlFile));
     } catch (IOException e) {
@@ -50,7 +59,7 @@ public class SchemaGenerator {
     SchemaExport schemaExport = new SchemaExport();
     schemaExport.setFormat(true);
     schemaExport.setDelimiter(";");
-    schemaExport.setOutputFile("target/schema.ddl");
+    schemaExport.setOutputFile(ddlFile);
     schemaExport.execute(EnumSet.of(TargetType.SCRIPT),
         SchemaExport.Action.CREATE, metadata);
   }

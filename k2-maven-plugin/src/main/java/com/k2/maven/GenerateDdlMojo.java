@@ -49,7 +49,7 @@ public class GenerateDdlMojo extends AbstractMojo {
   /** The file where this plugin saves the ddl, defaults to target.
    */
   @Parameter(defaultValue = "${project.build.directory}",
-      property = "outputDir", required = true)
+      property = "outputDirectory", required = true)
   private File outputDirectory;
 
   /** The application class name, never null.
@@ -92,9 +92,9 @@ public class GenerateDdlMojo extends AbstractMojo {
       Object schema = getBean.invoke(application,
           new Object[] {hibernateClass, "schema", Object.class});
 
-      Method generate = schema.getClass().getMethod("generate");
-
-      generate.invoke(schema);
+      Method generate = schema.getClass().getMethod("generate", String.class);
+      generate.invoke(schema, outputDirectory.getAbsolutePath()
+          + "/schema.ddl");
     } catch (MojoExecutionException e) {
       throw e;
     } catch (ClassNotFoundException e) {
