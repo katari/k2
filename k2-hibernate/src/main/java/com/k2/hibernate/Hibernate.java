@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ import org.hibernate.mapping.MetaAttribute;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Table.ForeignKeyKey;
+import org.hibernate.mapping.UniqueKey;
 import org.hibernate.service.Service;
 
 import com.k2.core.K2Environment;
@@ -169,6 +171,13 @@ public class Hibernate implements RegistryFactory {
             : table.getForeignKeys().entrySet()) {
           ForeignKey foreignKey = entry.getValue();
           foreignKey.setName(prefix + "_" + foreignKey.getName());
+        }
+
+        // Add the module prefix to each unique key name.
+        Iterator<UniqueKey> uniqueKeys = table.getUniqueKeyIterator();
+        while (uniqueKeys.hasNext()) {
+          UniqueKey uniqueKey = uniqueKeys.next();
+          uniqueKey.setName(prefix + "_" + uniqueKey.getName());
         }
       }
 

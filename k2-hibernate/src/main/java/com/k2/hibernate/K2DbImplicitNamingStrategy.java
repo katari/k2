@@ -168,8 +168,9 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   public Identifier determineUniqueKeyName(
       final ImplicitUniqueKeyNameSource source) {
     StringBuilder fkName = new StringBuilder();
-    fkName.append("uk");
-    for (Identifier columnName : sort(source.getColumnNames())) {
+    fkName.append("uk_");
+    fkName.append(source.getTableName());
+    for (Identifier columnName : source.getColumnNames()) {
       fkName.append("_").append(columnName.getText());
     }
     return apply(source.getBuildingContext().getObjectNameNormalizer()
@@ -185,7 +186,7 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
     StringBuilder fkName = new StringBuilder();
     fkName.append("idx");
 
-    for (Identifier columnName : sort(source.getColumnNames())) {
+    for (Identifier columnName : source.getColumnNames()) {
       fkName.append("_").append(columnName.getText());
     }
 

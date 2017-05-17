@@ -16,11 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.After;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -105,18 +102,17 @@ public class HibernateTest {
         SchemaGenerator.class);
     schema.generate();
 
+    String content = "";
     try (Scanner scanner = new Scanner(new File("target/schema.ddl"))) {
-      String currentLine;
-      while (scanner.hasNext()) {
-        currentLine = scanner.nextLine();
-        if (currentLine.contains("create table tm_entity_1")) {
-          return;
-        }
-      }
+      content = scanner.useDelimiter("\\A").next();
     } catch (FileNotFoundException e) {
       throw new RuntimeException("target/schema.ddl not found", e);
     }
-    fail("ddl does not have the create table line.");
+
+    assertThat(content, containsString("create table tm_entity_1"));
+    assertThat(content, containsString("tm_uk_entity_3_unique_value"));
+    assertThat(content, containsString("create index idx_entity_1_id"));
+    assertThat(content, containsString("tm_fk_entity_3_entity_1_id_entity_1"));
   }
 
   // Sample class to create beans in the test application.
