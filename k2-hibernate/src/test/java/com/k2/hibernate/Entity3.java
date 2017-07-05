@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -36,6 +37,7 @@ public class Entity3 {
 
   /** a sample link to other entity. */
   @ManyToOne
+  @JoinColumn
   private Entity1 entity1;
 
   /** The pk.

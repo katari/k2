@@ -5,7 +5,6 @@ package com.k2.hibernate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -27,6 +26,7 @@ import org.hibernate.boot.MetadataBuilder;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.MetaAttribute;
 import org.hibernate.mapping.PersistentClass;
@@ -153,32 +153,28 @@ public class Hibernate implements RegistryFactory {
     MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder()
         .enableNewIdentifierGeneratorSupport(false);
     if (useK2Naming) {
-      metadataBuilder
-        .applyImplicitNamingStrategy(new K2DbImplicitNamingStrategy());
+      metadataBuilder.applyImplicitNamingStrategy(
+          new K2DbImplicitNamingStrategy());
     }
     Metadata metadata = metadataBuilder.build();
 
+    // Rename collection tables and their related elements.
+    for (Collection c : metadata.getCollectionBindings()) {
+      Table table = c.getCollectionTable();
+      if (usePrefix) {
+        String prefix = prefixes.get(c.getOwner().getMappedClass());
+        prefixDddlElements(prefix, table);
+      }
+    }
+
+    // Renames entity tables, their related elements and configures the
+    // tuplizers.
     for (PersistentClass pc : metadata.getEntityBindings()) {
       Table table = pc.getTable();
-      String prefix = prefixes.get(pc.getMappedClass());
 
       if (usePrefix) {
-        // Add the module prefix to the table name.
-        table.setName(prefix + "_" + table.getName());
-
-        // Add the module prefix to each foreign key name.
-        for (Map.Entry<ForeignKeyKey, ForeignKey> entry
-            : table.getForeignKeys().entrySet()) {
-          ForeignKey foreignKey = entry.getValue();
-          foreignKey.setName(prefix + "_" + foreignKey.getName());
-        }
-
-        // Add the module prefix to each unique key name.
-        Iterator<UniqueKey> uniqueKeys = table.getUniqueKeyIterator();
-        while (uniqueKeys.hasNext()) {
-          UniqueKey uniqueKey = uniqueKeys.next();
-          uniqueKey.setName(prefix + "_" + uniqueKey.getName());
-        }
+        String prefix = prefixes.get(pc.getMappedClass());
+        prefixDddlElements(prefix, table);
       }
 
       pc.addTuplizer(EntityMode.POJO, HibernateTuplizer.class.getName());
@@ -190,6 +186,32 @@ public class Hibernate implements RegistryFactory {
     }
 
     return metadata;
+  }
+
+  /** Renames the table and its related elements based on the module prefix.
+   *
+   * @param prefix the prefix to add to ddl element names. It cannot be null.
+   *
+   * @param table the table object that contains the elements to rename. It
+   * cannot be null.
+   */
+  private void prefixDddlElements(final String prefix, final Table table) {
+    // Add the module prefix to the table name.
+    table.setName(prefix + "_" + table.getName());
+
+    // Add the module prefix to each foreign key name.
+    for (Map.Entry<ForeignKeyKey, ForeignKey> entry
+        : table.getForeignKeys().entrySet()) {
+      ForeignKey foreignKey = entry.getValue();
+      foreignKey.setName(prefix + "_" + foreignKey.getName());
+    }
+
+    // Add the module prefix to each unique key name.
+    Iterator<UniqueKey> uniqueKeys = table.getUniqueKeyIterator();
+    while (uniqueKeys.hasNext()) {
+      UniqueKey uniqueKey = uniqueKeys.next();
+      uniqueKey.setName(prefix + "_" + uniqueKey.getName());
+    }
   }
 
   /** Hibernate SessionFactory.

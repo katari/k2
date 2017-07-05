@@ -112,7 +112,23 @@ public class HibernateTest {
     assertThat(content, containsString("create table tm_entity_1"));
     assertThat(content, containsString("tm_uk_entity_3_unique_value"));
     assertThat(content, containsString("create index idx_entity_1_id"));
-    assertThat(content, containsString("tm_fk_entity_3_entity_1_id_entity_1"));
+
+    // A ManyToOne joined by column.
+    assertThat(content, containsString("tm_fk_entity_3_id_entity_1"));
+
+    // An element collection with a long.
+    assertThat(content, containsString("create table tm_entity_1_longs"));
+    assertThat(content, containsString("tm_fk_entity_1_longs_id"));
+
+    // An element collection with an embeddable.
+    assertThat(content, containsString("create table tm_entity_1_values"));
+    assertThat(content, containsString("tm_fk_entity_1_values_id"));
+
+    // A many to many
+    assertThat(content, containsString("create table tm_entity_1_entities"));
+    assertThat(content, containsString("tm_fk_entity_1_entities_id"));
+
+
   }
 
   // Sample class to create beans in the test application.

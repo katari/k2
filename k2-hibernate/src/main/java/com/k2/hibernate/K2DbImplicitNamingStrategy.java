@@ -50,7 +50,8 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   /** The base implementation of this naming strategy, never null. */
   private ImplicitNamingStrategy delegate;
 
-  /** Constructor, creates a new naming strategy. */
+  /** Constructor, creates a new naming strategy.
+   */
   K2DbImplicitNamingStrategy() {
     delegate = new SpringImplicitNamingStrategy();
   }
@@ -145,17 +146,29 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   /** Creates a foreign key name concatenating "fk", the table name, the list
    * of columns of the table in alphabetical order, and the referenced table
    * name, all separated by  '_'.
+   *
+   * This operation removes certain redundant parts to make the fk name
+   * shorter.
    */
   @Override
   public Identifier determineForeignKeyName(
       final ImplicitForeignKeyNameSource source) {
     StringBuilder fkName = new StringBuilder();
     fkName.append("fk_");
-    fkName.append(source.getTableName().getText());
+    String mainTableName = source.getTableName().getText();
+    String referencedTableName = source.getReferencedTableName().getText();
+
+    fkName.append(mainTableName);
     for (Identifier columnName : sort(source.getColumnNames())) {
-      fkName.append("_").append(columnName.getText());
+      String columnFragment = columnName.getText();
+      if (columnFragment.startsWith(referencedTableName)) {
+        columnFragment = columnFragment.substring(referencedTableName.length());
+      }
+      fkName.append("_").append(columnFragment);
     }
-    fkName.append("_").append(source.getReferencedTableName().getText());
+    if (!mainTableName.startsWith(referencedTableName)) {
+      fkName.append("_").append(referencedTableName);
+    }
     return apply(source.getBuildingContext().getObjectNameNormalizer()
         .normalizeIdentifierQuoting(Identifier.toIdentifier(
             fkName.toString())));

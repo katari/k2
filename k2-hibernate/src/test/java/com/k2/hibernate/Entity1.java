@@ -2,9 +2,13 @@
 
 package com.k2.hibernate;
 
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.ElementCollection;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 /** Sample entity to use in HibernateTest. */
 @Entity
@@ -15,6 +19,18 @@ public class Entity1 {
 
   /** a sample column. */
   private String value;
+
+  /** A sample element collection, to check generated fk names. */
+  @ElementCollection
+  private List<Long> longs = null;
+
+  /** A sample element collection, to check generated fk names. */
+  @ElementCollection
+  private List<Value1> values = null;
+
+  /** A sample entity collection, to check generated fk names. */
+  @ManyToMany
+  private List<Entity2> entities = null;
 
   /** The pk.
    *
