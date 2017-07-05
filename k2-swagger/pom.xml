@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.github.katari</groupId>
     <artifactId>k2-parent</artifactId>
-    <version>0.0.8</version>
+    <version>0.0.9-SNAPSHOT</version>
     <relativePath>../k2-parent/pom.xml</relativePath>
   </parent>
 
