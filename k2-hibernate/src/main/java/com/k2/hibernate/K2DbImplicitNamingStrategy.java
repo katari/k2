@@ -143,31 +143,18 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
     return apply(delegate.determineListIndexColumnName(source));
   }
 
-  /** Creates a foreign key name concatenating "fk", the table name, the list
-   * of columns of the table in alphabetical order, and the referenced table
-   * name, all separated by  '_'.
-   *
-   * This operation removes certain redundant parts to make the fk name
-   * shorter.
+  /** Creates a foreign key name concatenating "fk", the table name and the
+   * list of columns of the table in alphabetical order, all separated by '_'.
    */
   @Override
   public Identifier determineForeignKeyName(
       final ImplicitForeignKeyNameSource source) {
     StringBuilder fkName = new StringBuilder();
-    fkName.append("fk_");
-    String mainTableName = source.getTableName().getText();
-    String referencedTableName = source.getReferencedTableName().getText();
 
-    fkName.append(mainTableName);
+    fkName.append("fk_");
+    fkName.append(source.getTableName().getText());
     for (Identifier columnName : sort(source.getColumnNames())) {
-      String columnFragment = columnName.getText();
-      if (columnFragment.startsWith(referencedTableName)) {
-        columnFragment = columnFragment.substring(referencedTableName.length());
-      }
-      fkName.append("_").append(columnFragment);
-    }
-    if (!mainTableName.startsWith(referencedTableName)) {
-      fkName.append("_").append(referencedTableName);
+      fkName.append("_").append(columnName.getText());
     }
     return apply(source.getBuildingContext().getObjectNameNormalizer()
         .normalizeIdentifierQuoting(Identifier.toIdentifier(

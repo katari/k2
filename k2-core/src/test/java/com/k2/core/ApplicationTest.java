@@ -61,7 +61,8 @@ public class ApplicationTest {
   @BeforeClass public static void setUp() {
     initCalled = false;
     application = new WebApplication();
-    application.run(new String[] {"--server.port=0"});
+    application.run(new String[] {"--server.port=0",
+      "--logging.file=target/log/test-overriden.log"});
 
     K2Environment environment;
     environment = application.getBean("environment", K2Environment.class);

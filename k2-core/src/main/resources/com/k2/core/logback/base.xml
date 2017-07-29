@@ -6,7 +6,7 @@
     <resetJUL>true</resetJUL>
   </contextListener>
 
-  <property name="LOG_FILE" value="target/log/test.log"/>
+  <property name="LOG_FILE" value="${LOG_FILE:-target/log/test.log}"/>
 
   <!-- Adds some color to the logging output. Used in the console appender
        pattern. -->
