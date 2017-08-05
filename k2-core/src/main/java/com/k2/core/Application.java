@@ -155,6 +155,10 @@ public class Application {
   public void stop() {
     if (applicationContext != null && applicationContext.isActive()) {
       SpringApplication.exit(applicationContext, new ExitCodeGenerator[0]);
+
+      for (ModuleDefinition module : modules.values()) {
+        module.getContext().close();
+      }
     }
     applicationContext = null;
   }

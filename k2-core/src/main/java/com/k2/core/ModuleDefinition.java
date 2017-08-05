@@ -324,6 +324,12 @@ public class ModuleDefinition {
     exportPublicBeans(parentBeanFactory);
   }
 
+  /** Closes the module and its corresponding application context.
+   */
+  void close() {
+    getContext().close();
+  }
+
   /** Returns a list of servlet context initializers registered in the module.
    *
    * A module writer may add private servlets and filters to his module, and
