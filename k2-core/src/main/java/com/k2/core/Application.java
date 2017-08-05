@@ -157,7 +157,7 @@ public class Application {
       SpringApplication.exit(applicationContext, new ExitCodeGenerator[0]);
 
       for (ModuleDefinition module : modules.values()) {
-        module.getContext().close();
+        module.close();
       }
     }
     applicationContext = null;
