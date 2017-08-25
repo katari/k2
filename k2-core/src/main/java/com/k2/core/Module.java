@@ -21,7 +21,7 @@ public @interface Module {
 
   /** The default value for the short name.
    *
-   * This is default value indicates that the module writer did not specified
+   * This default value indicates that the module writer did not specify
    * any short name, so ModuleDefinition.getModuleShortName will return null.
    */
   String NO_SHORT_NAME = "SHORT_NAME_NOT_SPECIFIED";

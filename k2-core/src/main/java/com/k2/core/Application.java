@@ -57,7 +57,7 @@ public class Application {
   /** The class logger. */
   private final Logger log = LoggerFactory.getLogger(Application.class);
 
-  /** The module definitions off all modules initialized in this application.
+  /** The module definitions of all modules initialized in this application.
    *
    * This is never null.
    */
