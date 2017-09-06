@@ -59,6 +59,11 @@ public class HibernateTest {
         is(not(nullValue())));
   }
 
+  @Test public void dataSource_isPublic() {
+    Object ds = application.getBean("hibernate.dataSource", Object.class);
+    assertThat(ds, is(not(nullValue())));
+  }
+
   @Test public void save() {
     EntityRepository repo = application.getBean(
         "testmodule.entity1Repository", EntityRepository.class);

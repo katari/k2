@@ -245,7 +245,8 @@ public class Hibernate implements RegistryFactory {
    *
    * @return the data source, never null.
    */
-  @Bean public DataSource dataSource(final PoolProperties poolProperties) {
+  @Public @Bean(name = "dataSource")
+  public DataSource dataSource(final PoolProperties poolProperties) {
     return new DataSource(poolProperties);
   }
 
