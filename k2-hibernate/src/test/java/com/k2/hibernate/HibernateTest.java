@@ -129,9 +129,12 @@ public class HibernateTest {
     assertThat(content, containsString("create table tm_entity_1_values"));
     assertThat(content, containsString("tm_fk_entity_1_values_entity_1_id"));
 
-    // A many to many
+    // A many to many relation table.
     assertThat(content, containsString("create table tm_entity_1_entities"));
     assertThat(content, containsString("tm_fk_entity_1_entities_entities_id"));
+
+    // A single table inheritance table name.
+    assertThat(content, containsString("create table tm_base_class"));
   }
 
   // Sample class to create beans in the test application.
@@ -163,6 +166,11 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
+
+      // These classes test the naming convention for single table inheritance.
+      hibernateRegistry.registerPersistentClass(BaseClass.class);
+      hibernateRegistry.registerPersistentClass(SubClass1.class);
+      hibernateRegistry.registerPersistentClass(SubClass2.class);
     }
 
     @Bean @Public public EntityRepository entity1Repository(

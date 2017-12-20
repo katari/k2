@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.Validate;
@@ -169,12 +171,16 @@ public class Hibernate implements RegistryFactory {
 
     // Renames entity tables, their related elements and configures the
     // tuplizers.
+    Set<String> alreadyPrefixed = new HashSet<String>();
     for (PersistentClass pc : metadata.getEntityBindings()) {
       Table table = pc.getTable();
 
-      if (usePrefix) {
+      // In single table inheritance, many persistent classes points to the
+      // same table, so only add the prefix the first time a table shows up.
+      if (usePrefix && !alreadyPrefixed.contains(table.getName())) {
         String prefix = prefixes.get(pc.getMappedClass());
         prefixDddlElements(prefix, table);
+        alreadyPrefixed.add(table.getName());
       }
 
       pc.addTuplizer(EntityMode.POJO, HibernateTuplizer.class.getName());
