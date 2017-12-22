@@ -8,7 +8,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.ElementCollection;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 /** Sample entity to use in HibernateTest. */
 @Entity
@@ -31,6 +33,11 @@ public class Entity1 {
   /** A sample entity collection, to check generated fk names. */
   @ManyToMany
   private List<Entity2> entities = null;
+
+  /** A sample entity collection of a class hierarchy. */
+  @OneToMany
+  @JoinColumn(nullable = false)
+  private List<SingleTableBaseClass> abstractEntity = null;
 
   /** The pk.
    *

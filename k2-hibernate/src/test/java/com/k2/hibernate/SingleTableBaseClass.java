@@ -15,7 +15,7 @@ import javax.persistence.DiscriminatorColumn;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type")
-public class BaseClass {
+public class SingleTableBaseClass {
 
   /** The pk. */
   private @Id @GeneratedValue long id;
@@ -40,14 +40,14 @@ public class BaseClass {
   }
 
   /** Empty constructor. */
-  BaseClass() {
+  SingleTableBaseClass() {
   }
 
   /** Constructor to initialize the value.
    *
    * @param theValue the value.
    */
-  BaseClass(final String theValue) {
+  SingleTableBaseClass(final String theValue) {
     value = theValue;
   }
 }

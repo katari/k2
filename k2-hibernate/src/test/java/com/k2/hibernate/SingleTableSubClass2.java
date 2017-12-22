@@ -6,12 +6,12 @@ import javax.persistence.Entity;
 
 /** Sample entity to use in HibernateTest. */
 @Entity
-public class SubClass1 extends BaseClass {
+public class SingleTableSubClass2 extends SingleTableBaseClass {
 
   /** Constructor to initialize the value.
    */
-  SubClass1() {
-    super("I am SubClass1");
+  SingleTableSubClass2() {
+    super("I am SingleTableSubClass2");
   }
 }
 

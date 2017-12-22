@@ -6,8 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.Validate;
@@ -142,8 +140,8 @@ public class Hibernate implements RegistryFactory {
       .addService(this.getClass(), new HibernateRegistryLocator(registries))
       .build();
 
+    // Collects the entity prefixes from the hibernate registries.
     Map<Class<?>, String> prefixes = new HashMap<>();
-
     MetadataSources metadataSources = new MetadataSources(registry);
     for (HibernateRegistry hibernateRegistry: registries) {
       for (Class<?> entity : hibernateRegistry.getPersistentClasses()) {
@@ -152,6 +150,7 @@ public class Hibernate implements RegistryFactory {
       }
     }
 
+    // Builds the hibernate metadata.
     MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder()
         .enableNewIdentifierGeneratorSupport(false);
     if (useK2Naming) {
@@ -160,28 +159,25 @@ public class Hibernate implements RegistryFactory {
     }
     Metadata metadata = metadataBuilder.build();
 
-    // Rename collection tables and their related elements.
+    // This map contains the full list of tables and the prefix to add to their
+    // names. This is used so that the tables are not modified while iterating
+    // the collections and entities, which will give unexpected results.
+    Map<Table, String> tablePrefixes = new HashMap<Table, String>();
+
+    // Obtains all the collection tables. This may be used later to add the
+    // table prefixes, if necessary.
     for (Collection c : metadata.getCollectionBindings()) {
       Table table = c.getCollectionTable();
-      if (usePrefix) {
-        String prefix = prefixes.get(c.getOwner().getMappedClass());
-        prefixDddlElements(prefix, table);
-      }
+      String prefix = prefixes.get(c.getOwner().getMappedClass());
+      tablePrefixes.put(table, prefix);
     }
 
-    // Renames entity tables, their related elements and configures the
-    // tuplizers.
-    Set<String> alreadyPrefixed = new HashSet<String>();
+    // Obtains all the entity tables and configures their tuplizers.
     for (PersistentClass pc : metadata.getEntityBindings()) {
       Table table = pc.getTable();
 
-      // In single table inheritance, many persistent classes points to the
-      // same table, so only add the prefix the first time a table shows up.
-      if (usePrefix && !alreadyPrefixed.contains(table.getName())) {
-        String prefix = prefixes.get(pc.getMappedClass());
-        prefixDddlElements(prefix, table);
-        alreadyPrefixed.add(table.getName());
-      }
+      String prefix = prefixes.get(pc.getMappedClass());
+      tablePrefixes.put(table, prefix);
 
       pc.addTuplizer(EntityMode.POJO, HibernateTuplizer.class.getName());
 
@@ -191,17 +187,24 @@ public class Hibernate implements RegistryFactory {
       pc.setMetaAttributes(attributes);
     }
 
+    // If requested, add the prefix to all database objects.
+    if (usePrefix) {
+      for (Map.Entry<Table, String> tablePrefix : tablePrefixes.entrySet()) {
+        prefixDddlElements(tablePrefix.getKey(), tablePrefix.getValue());
+      }
+    }
+
     return metadata;
   }
 
   /** Renames the table and its related elements based on the module prefix.
    *
-   * @param prefix the prefix to add to ddl element names. It cannot be null.
-   *
    * @param table the table object that contains the elements to rename. It
    * cannot be null.
+   *
+   * @param prefix the prefix to add to ddl element names. It cannot be null.
    */
-  private void prefixDddlElements(final String prefix, final Table table) {
+  private void prefixDddlElements(final Table table, final String prefix) {
     // Add the module prefix to the table name.
     table.setName(prefix + "_" + table.getName());
 
