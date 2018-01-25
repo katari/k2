@@ -21,7 +21,7 @@ tags:
 - name: developers
   description: Operations available to regular developers
 schemes:
-- https
+- http
 paths:
   /inventory:
     get:
@@ -103,8 +103,8 @@ definitions:
         example: Widget Adapter
       releaseDate:
         type: string
-        format: int32
-        example: 2016-08-29T09:12:33.001Z
+        format: date-time
+        example: '2016-08-29T09:12:33.001Z'
       manufacturer:
         $ref: '#/definitions/Manufacturer'
   Manufacturer:
@@ -121,8 +121,4 @@ definitions:
       phone:
         type: string
         example: 408-867-5309
-
-# Added by API Auto Mocking Plugin
-host: virtserver.swaggerhub.com
-basePath: /katari/test/1.0.0
 

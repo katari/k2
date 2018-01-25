@@ -9,6 +9,7 @@ import org.apache.commons.lang3.Validate;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.k2.core.Module;
 import com.k2.core.ModuleDefinition;
@@ -44,11 +45,16 @@ public class Swagger implements RegistryFactory {
 
   /** The swagger controller that shows the spec documentation.
    *
+   * @param moduleDefinition the module definition. It cannot be null.
+   *
+   * @param debug true if in debug mode.
+   *
    * @return the swagger main controller, never returns null.
    */
-  @Bean SwaggerController controller() {
+  @Bean SwaggerController controller(final ModuleDefinition moduleDefinition,
+      @Value("${debug:#{false}}") final boolean debug) {
     Validate.notNull(registries, "The registries cannot be null.");
-    return new SwaggerController(registries);
+    return new SwaggerController(moduleDefinition, registries, debug);
   }
 }
 

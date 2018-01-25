@@ -157,10 +157,10 @@ public class ModuleDefinition {
    * first in the file system based on this path, and then in their normal
    * location in the classpath.
    *
-   * @return the file system relative path of this module resources. Null if
+   * @return the file system relative path of this module resources. null if
    * the module does support reloading of resources during development.
    */
-  String getRelativePath() {
+  public String getRelativePath() {
     Class<?> moduleClass = moduleInstance.getClass();
 
     String path = null;

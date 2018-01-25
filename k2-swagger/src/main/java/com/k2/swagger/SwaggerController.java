@@ -3,8 +3,17 @@
 package com.k2.swagger;
 
 import java.io.InputStream;
+import java.io.IOException;
+
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.Files;
+
 import java.util.List;
 import java.util.Scanner;
+
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import org.apache.commons.lang3.Validate;
 
@@ -12,13 +21,30 @@ import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import com.k2.core.ModuleDefinition;
 
 /** Exposes the swagger-ui client to show the documentation of every registered
  * swagger spec.
+ *
+ * In debug mode, this controller loads the index.html from the file system.
+ * Otherwise it loads it from the classpath.
  */
 @Controller
 public class SwaggerController {
+
+  /** The class logger. */
+  private static Logger log = LoggerFactory.getLogger(SwaggerController.class);
+
+  /** Whether the application is loaded in debug mode or not.
+   *
+   * Defaults to false.
+   */
+  private boolean debug = false;
+
+  /** The module definition of this module, never null.
+   */
+  private ModuleDefinition moduleDefinition;
 
   /** The list of swagger registries that contains the url of each swagger
    * spec, never null. */
@@ -26,63 +52,75 @@ public class SwaggerController {
 
   /** Constructor, creates a SwaggerController.
    *
+   * @param theModuleDefinition the module definition of this module. It cannot
+   * be null.
+   *
    * @param theRegistries the registries with the swagger specs. It cannot be
    * null.
+   *
+   * @param isDebug true if this controller is operating en debug mode.
    */
-  public SwaggerController(final List<SwaggerRegistry> theRegistries) {
+  public SwaggerController(final ModuleDefinition theModuleDefinition,
+      final List<SwaggerRegistry> theRegistries, final boolean isDebug) {
     Validate.notNull(theRegistries, "The registries cannot be null.");
+    Validate.notNull(theModuleDefinition, "The definition cannot be null.");
+    moduleDefinition = theModuleDefinition;
     registries = theRegistries;
+    debug = isDebug;
   }
 
   /** Serves the '/' path with the documentation of each of the swagger specs
    * registered in the swagger module.
    *
-   * @param index a number that indicates which spec to server, starting from
-   * 0.
-   *
    * @return the full page with the spec documentation, never returns null.
    */
-  @RequestMapping(value = "/", method = RequestMethod.GET)
-  public HttpEntity<String> swaggerUi(
-      @RequestParam(name = "spec", defaultValue = "0", required = false)
-      final int index) {
+  @RequestMapping(value = "", method = RequestMethod.GET,
+      produces="text/html;charset=UTF-8")
+  public HttpEntity<String> swaggerUi() {
 
-    String template;
-    InputStream content = getClass().getResourceAsStream("index.html");
-    try (Scanner scanner = new Scanner(content)) {
-      scanner.useDelimiter("\\Z");
-      template = scanner.next();
+    String template = null;
+
+    if (debug) {
+      log.debug("In debug mode, trying to load index.html from file system.");
+      String parent = moduleDefinition.getRelativePath();
+      if (parent != null) {
+        String child = getClass().getPackage().getName().replace(".", "/");
+        Path file = Paths.get(parent, child, "index.html");
+        log.debug("Checking {}", file.toString());
+        if (Files.isRegularFile(file)) {
+          try {
+            byte[] encoded = Files.readAllBytes(file);
+            template = new String(encoded, "UTF-8");
+          } catch (IOException e) {
+            throw new RuntimeException("Error reading " + file.toString(), e);
+          }
+        }
+      }
     }
 
-    String swagger = "\n";
-    String options = "";
-    int count = 0;
+    if (template == null) {
+      InputStream content = getClass().getResourceAsStream("index.html");
+      try (Scanner scanner = new Scanner(content)) {
+        scanner.useDelimiter("\\Z");
+        template = scanner.next();
+      }
+    }
+
+    String urls = "";
     for (SwaggerRegistry registry: registries) {
       String idl = registry.getIdl();
       String path = registry.getRequestorPath();
-      if (idl == null) {
-        // Skip null idls.
-        continue;
+      // Only non-null idls.
+      if (idl != null) {
+        urls += "{name: \"" + path + "\", url:\"" + idl + "\"},\n";
       }
-      options += "    <option ";
-      if (count == index) {
-        options += "selected ";
-      }
-      options += "value='" + count + "'>" + idl + "</option>\n";
-
-      if (count == index) {
-        swagger += "  <div id='swagger-ui-container-" + count + "'";
-        swagger += " class='swagger-ui-wrap'></div>\n";
-        swagger += "  <script type='text/javascript'>\n";
-        swagger += "    createSwagger('" + idl + "', ";
-        swagger += "'swagger-ui-container-" + count + "', '";
-        swagger += path + "');\n";
-        swagger += "  </script>\n";
-      }
-      ++count;
     }
-    String html = template.replaceAll("@@options@@", options);
-    html = html.replaceAll("@@content@@", swagger);
+    String html;
+    if (!urls.isEmpty()) {
+      html = template.replaceAll("@@urls@@", "[" + urls + "]");
+    } else {
+      html = "No idl found - better remove the swagger module.";
+    }
     return new HttpEntity<String>(html);
   }
 }

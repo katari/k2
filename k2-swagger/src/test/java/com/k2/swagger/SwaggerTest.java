@@ -27,6 +27,7 @@ import com.k2.core.Application;
 import com.k2.core.ModuleContext;
 import com.k2.core.Registrator;
 import com.k2.core.K2Environment;
+import com.k2.core.Module;
 
 import com.k2.swagger.api.InventoryApiController;
 import com.k2.swagger.api.InventoryApiTest;
@@ -92,6 +93,7 @@ public class SwaggerTest {
   }
 
   @Component("module1")
+  @Module(relativePath = "../k2-swagger/src/test/resources")
   public static class Module1 implements Registrator {
     @Bean public InventoryApiController controller() {
       return new InventoryApiTest().createController();
@@ -104,7 +106,11 @@ public class SwaggerTest {
   }
 
   @Component("module2")
+  @Module(relativePath = "../k2-swagger/src/test/resources")
   public static class Module2 implements Registrator {
+    @Bean public InventoryApiController controller() {
+      return new InventoryApiTest().createController();
+    }
     @Override
     public void addRegistrations(final ModuleContext moduleContext) {
       SwaggerRegistry registry = moduleContext.get(SwaggerRegistry.class);

@@ -101,6 +101,21 @@
     </dependency>
 
     <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-parameter-names</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jdk8</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
     </dependency>
@@ -128,18 +143,23 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>fluent-hc</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
     <!-- Test dependencies -->
     <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>fluent-hc</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -150,7 +170,6 @@
       <plugin>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-codegen-maven-plugin</artifactId>
-        <version>2.2.2</version>
         <executions>
           <execution>
             <?m2e execute onConfiguration?>
@@ -175,6 +194,7 @@
               <configOptions>
                 <configPackage>com.k2.swagger.api</configPackage>
                 <delegatePattern>true</delegatePattern>
+                <dateLibrary>java8</dateLibrary>
               </configOptions>
             </configuration>
           </execution>

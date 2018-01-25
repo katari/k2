@@ -8,7 +8,8 @@ import com.k2.core.ModuleDefinition;
 
 /** The swagger registry.
  *
- * This stores the url of a module swagger spec.
+ * This stores the url of a module swagger spec. Each module can register just
+ * one idl file.
  */
 public class SwaggerRegistry {
 

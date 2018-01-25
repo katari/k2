@@ -2,7 +2,8 @@
 
 <configuration debug="false" scan="false">
 
-  <property name="LAUNCHER_CLASS" value="com.k2.SampleLauncher" />
+  <property name="LAUNCHER_CLASS"
+    value="com.k2.swagger.SwaggerTest$TestApplication" />
 
   <include resource="com/k2/core/logback/base.xml" />
 
