@@ -176,8 +176,19 @@ public class Hibernate implements RegistryFactory {
     for (PersistentClass pc : metadata.getEntityBindings()) {
       Table table = pc.getTable();
 
-      String prefix = prefixes.get(pc.getMappedClass());
-      tablePrefixes.put(table, prefix);
+      // In single table inheritance, all subclasses are mapped to the same
+      // table. If this class has a parent, and that parent is mapped to the
+      // same table that this class, this is a subclass in a single table
+      // inheritance.
+      boolean isSingleTableSubclass = (pc.getSuperclass() == null
+        || !pc.getSuperclass().getTable().equals(table));
+      if (isSingleTableSubclass) {
+        // Do not add the prefix to this table, it will be be added in the base
+        // class. ie: the prefix is determined by the module that owns the base
+        // class.
+        String prefix = prefixes.get(pc.getMappedClass());
+        tablePrefixes.put(table, prefix);
+      }
 
       pc.addTuplizer(EntityMode.POJO, HibernateTuplizer.class.getName());
 

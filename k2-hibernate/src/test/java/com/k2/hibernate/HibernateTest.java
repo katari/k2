@@ -133,20 +133,28 @@ public class HibernateTest {
     assertThat(content, containsString("create table tm_entity_1_entities"));
     assertThat(content, containsString("tm_fk_entity_1_entities_entities_id"));
 
-    // A single table inheritance table name.
+    // A single table per class hierarchy table name.
     assertThat(content, containsString(
           "create table tm_single_table_base_class"));
 
-    // All mapped table inheritance table names.
+    // All mapped super class hierarchy table names.
     assertThat(content, containsString(
           "create table tm_mapped_super_sub_class_1"));
     assertThat(content, containsString(
-          "create table tm_mapped_super_sub_class_2"));
+          "create table tm2_mapped_super_sub_class_2"));
 
-    // All joined table inheritance table names.
+    // All joined inheritance table names.
     assertThat(content, containsString("create table tm_joined_base_class"));
     assertThat(content, containsString("create table tm_joined_sub_class_1"));
-    assertThat(content, containsString("create table tm_joined_sub_class_2"));
+    assertThat(content, containsString("create table tm2_joined_sub_class_2"));
+
+    // All table per class table names.
+    assertThat(content, containsString(
+          "create table tm_table_per_class_base_class"));
+    assertThat(content, containsString(
+          "create table tm_table_per_class_sub_class_1"));
+    assertThat(content, containsString(
+          "create table tm2_table_per_class_sub_class_2"));
 
     // Just in case, the tm_tm_ prefix should never appear.
     assertThat(content, not(containsString("tm_tm_")));
@@ -182,22 +190,25 @@ public class HibernateTest {
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
 
-      // These classes test the naming convention for single table inheritance.
+      // These classes test the naming convention for single table per class
+      // hierarchy.
       hibernateRegistry.registerPersistentClass(SingleTableBaseClass.class);
       hibernateRegistry.registerPersistentClass(SingleTableSubClass1.class);
-      hibernateRegistry.registerPersistentClass(SingleTableSubClass2.class);
 
-      // These classes test the naming convention for mapped superclass table
+      // These classes test the naming convention for mapped superclass
       // inheritance.
       hibernateRegistry.registerPersistentClass(MappedSuperBaseClass.class);
       hibernateRegistry.registerPersistentClass(MappedSuperSubClass1.class);
-      hibernateRegistry.registerPersistentClass(MappedSuperSubClass2.class);
 
       // These classes test the naming convention for joined superclass table
       // inheritance.
       hibernateRegistry.registerPersistentClass(JoinedBaseClass.class);
       hibernateRegistry.registerPersistentClass(JoinedSubClass1.class);
-      hibernateRegistry.registerPersistentClass(JoinedSubClass2.class);
+
+      // These classes test the naming convention for one table per class
+      // inheritance.
+      hibernateRegistry.registerPersistentClass(TablePerClassBaseClass.class);
+      hibernateRegistry.registerPersistentClass(TablePerClassSubClass1.class);
     }
 
     @Bean @Public public EntityRepository entity1Repository(
@@ -272,13 +283,35 @@ public class HibernateTest {
   };
 
   /////////////////////////////////////////////////////////////////////
+  ///////////    The module 2 declaration   ///////////////////////////
+  /////////////////////////////////////////////////////////////////////
+  @EnableTransactionManagement(proxyTargetClass = true)
+  @Configuration("testmodule2")
+  @Module(shortName = "tm2")
+
+  public static class Module2 implements Registrator {
+    @Override
+    public void addRegistrations(final ModuleContext moduleContext) {
+      HibernateRegistry hibernateRegistry;
+      hibernateRegistry = moduleContext.get(HibernateRegistry.class);
+
+      // These classes test the naming convention when different classe in the
+      // same hierachy belong to different modules.
+      hibernateRegistry.registerPersistentClass(SingleTableSubClass2.class);
+      hibernateRegistry.registerPersistentClass(MappedSuperSubClass2.class);
+      hibernateRegistry.registerPersistentClass(JoinedSubClass2.class);
+      hibernateRegistry.registerPersistentClass(TablePerClassSubClass2.class);
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////
   ///////////    The test application   ///////////////////////////////
   /////////////////////////////////////////////////////////////////////
   @Configuration
   public static class TestApplication extends Application {
 
     public TestApplication() {
-      super(new Hibernate(), new Module1());
+      super(new Hibernate(), new Module1(), new Module2());
       setWebEnvironment(false);
     }
 
