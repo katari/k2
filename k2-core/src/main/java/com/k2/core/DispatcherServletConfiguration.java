@@ -9,13 +9,19 @@ import org.springframework.web.servlet.config.annotation
 import org.springframework.web.servlet.config.annotation
     .WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation
+    .RequestMappingHandlerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation
     .RequestMappingHandlerMapping;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support
     .PropertySourcesPlaceholderConfigurer;
+import org.springframework.http.converter.HttpMessageConverter;
 
 /** Custom configuration for the dispatcher servlet application context
  *
@@ -58,6 +64,31 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
     RequestMappingHandlerMapping result = new RequestMappingHandlerMapping();
     result.setDetectHandlerMethodsInAncestorContexts(true);
     return result;
+  }
+
+  /** A handler adapter bean that can be configured with the message converters
+   * found in the application context hierarchy.
+   *
+   * If there is at least one message converter up in the application context
+   * hierarchy, this bean will override the default message converters for the
+   * handler adapter.
+   *
+   * @param converters a list of message converters. If empty, the handler
+   * adapter uses the default converters (see WebMvcConfigurationSupport).
+   *
+   * @return a RequestMappingHandlerAdapter configured with any message
+   * converter found in the application context. Never returns null.
+   */
+  @Bean
+  public RequestMappingHandlerAdapter requestMappingHandlerAdapter(
+      final List<HttpMessageConverter<?>> converters) {
+    RequestMappingHandlerAdapter adapter;
+    adapter = super.requestMappingHandlerAdapter();
+
+    if (!converters.isEmpty()) {
+      adapter.setMessageConverters(converters);
+    }
+    return adapter;
   }
 
   /** Registers handlers that serve the module static content.

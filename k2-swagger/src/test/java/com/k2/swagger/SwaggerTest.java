@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.http.converter.json
+    .MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 
 import org.apache.http.client.fluent.Executor;
@@ -23,6 +26,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.k2.core.Application;
 import com.k2.core.ModuleContext;
 import com.k2.core.Registrator;
@@ -102,6 +107,13 @@ public class SwaggerTest {
     public void addRegistrations(final ModuleContext moduleContext) {
       SwaggerRegistry registry = moduleContext.get(SwaggerRegistry.class);
       registry.registerIdl("/module1/static/api1.yaml");
+    }
+
+    @Bean public MappingJackson2HttpMessageConverter
+        mappingJackson2HttpMessageConverter() {
+      ObjectMapper mapper = Jackson2ObjectMapperBuilder.json().build();
+      mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+      return new MappingJackson2HttpMessageConverter(mapper);
     }
   }
 
