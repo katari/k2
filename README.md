@@ -66,3 +66,17 @@ This is the command we used to generate the k2-shiro module:
       -DgroupId=com.github.katari -DartifactId=k2-shiro \
       -Dpackage=com.k2.shiro -DclassPrefix=Shiro -Dversion=0.1-SNAPSHOT
 
+## Developing k2
+
+You need java 8 and maven 3.3.
+
+Most modules can be started with mvn spring-boot:run. You can play with, for
+example, k2-swagger by:
+
+    cd k2-swagger
+    mvn spring-boot:run
+
+and then go to the browser an point it to:
+
+    http://localhost:8081/swagger/
+

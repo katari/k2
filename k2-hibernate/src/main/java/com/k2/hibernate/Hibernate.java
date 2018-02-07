@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-
 import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
@@ -30,10 +29,13 @@ import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.MetaAttribute;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Table.ForeignKeyKey;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.service.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.k2.core.K2Environment;
 import com.k2.core.RegistryFactory;
@@ -76,6 +78,9 @@ import com.k2.core.Public;
 @Component("hibernate")
 @PropertySource("classpath:/com/k2/hibernate/hibernate.properties")
 public class Hibernate implements RegistryFactory {
+
+  /** The class logger, never null. */
+  private static Logger log = LoggerFactory.getLogger(Hibernate.class);
 
   /** The registries requested by all modules, never null.
    */
@@ -190,7 +195,7 @@ public class Hibernate implements RegistryFactory {
         tablePrefixes.put(table, prefix);
       }
 
-      pc.addTuplizer(EntityMode.POJO, HibernateTuplizer.class.getName());
+      configureTuplizers(pc);
 
       MetaAttribute attribute = new MetaAttribute("k2.moduleContext");
       Map<String, MetaAttribute> attributes = new HashMap<>();
@@ -206,6 +211,38 @@ public class Hibernate implements RegistryFactory {
     }
 
     return metadata;
+  }
+
+  /** Configures the tuplizers for the persistent class and its referenced
+   * components.
+   *
+   * @param pc the persistent class to look for components. It cannot be null.
+   */
+  private void configureTuplizers(final PersistentClass pc) {
+
+    pc.addTuplizer(EntityMode.POJO, HibernateEntityTuplizer.class.getName());
+
+    for (
+        @SuppressWarnings("unchecked")
+        Iterator<Property> it = pc.getPropertyIterator(); it.hasNext();) {
+      Property property = it.next();
+      org.hibernate.mapping.Value value = property.getValue();
+
+      if (value instanceof Collection) {
+        value = ((Collection) value).getElement();
+      }
+
+      if (value instanceof org.hibernate.mapping.Component) {
+        // Note: components may be referenced from many entities, so we will
+        // be adding the same tuplizer multiple times. This seems to be safe,
+        // though.
+        ((org.hibernate.mapping.Component) value).addTuplizer(EntityMode.POJO,
+            HibernateComponentTuplizer.class.getName());
+      } else {
+        log.warn("Type of value is {}, not configuring tuplizer.",
+            value.getClass());
+      }
+    }
   }
 
   /** Renames the table and its related elements based on the module prefix.

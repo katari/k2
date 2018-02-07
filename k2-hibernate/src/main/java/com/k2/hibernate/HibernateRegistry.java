@@ -69,7 +69,8 @@ public class HibernateRegistry {
     requestor = theRequestor;
   }
 
-  /** Registers a persistent class that does not need a custom factory.
+  /** Registers a persistent class or component that does not need a custom
+   * factory.
    *
    * @param theClass the persistent class. It cannot be null.
    */
@@ -78,8 +79,8 @@ public class HibernateRegistry {
     persistentClasses.add(theClass);
   }
 
-  /** Registers a persistent class with the factory that hibernate will use to
-   * instantiate that persistent class.
+  /** Registers a persistent class or component with the factory that hibernate
+   * will use to instantiate that persistent class.
    *
    * To instantiate a persistent class, hibernate will look for a bean instance
    * in the module application context of the type of the factory.

@@ -31,6 +31,7 @@ import com.k2.core.ModuleContext;
 import com.k2.core.Public;
 import com.k2.core.Registrator;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
@@ -100,6 +101,25 @@ public class HibernateTest {
         is("Entity 2 factory parameter"));
     assertThat(result.get(1).getId(), is(2L));
     assertThat(result.get(1).getValue(), is("second value"));
+  }
+
+  @Test public void save_withComponentFactory() {
+    EntityRepository repo = application.getBean(
+        "testmodule.entity1Repository", EntityRepository.class);
+
+    Value1Factory factory = new Value1Factory();
+
+    Entity1 entity = new Entity1("an entity");
+    entity.addValue(factory.create("one value"));
+    entity.addValue(factory.create("another value"));
+    repo.save(entity);
+    List<Entity1> result = repo.listEntity1();
+
+    assertThat(result.size(), is(1));
+    assertThat(result.get(0).getValues().get(0).getInjected(),
+        is("the injected value"));
+    assertThat(result.get(0).getLastAddedValue().getInjected(),
+        is("the injected value"));
   }
 
   @Test public void generateSchema() {
@@ -189,6 +209,8 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
+      hibernateRegistry.registerPersistentClass(Value1.class,
+          Value1Factory.class);
 
       // These classes test the naming convention for single table per class
       // hierarchy.
@@ -224,6 +246,10 @@ public class HibernateTest {
         @Qualifier("parameter") final StringHolder parameter) {
       return new Entity2Factory(parameter);
     }
+
+    @Bean public Value1Factory value1Factory() {
+      return new Value1Factory();
+    }
   };
 
   /////////////////////////////////////////////////////////////////////
@@ -241,6 +267,21 @@ public class HibernateTest {
     }
     Entity2 create(final String value) {
       return new Entity2(parameter, value);
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  ///////////    The value 1  factory /////////////////////////////////
+  /////////////////////////////////////////////////////////////////////
+  public static class Value1Factory {
+    private String injected = "the injected value";
+
+    Value1 create() {
+      return new Value1(injected);
+    }
+
+    Value1 create(final String value) {
+      return new Value1(injected, value);
     }
   }
 
@@ -270,6 +311,7 @@ public class HibernateTest {
       Session session = sessionFactory.getCurrentSession();
       return session.createCriteria(Entity1.class)
           .addOrder(Order.asc("id"))
+          .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
           .list();
     }
 
