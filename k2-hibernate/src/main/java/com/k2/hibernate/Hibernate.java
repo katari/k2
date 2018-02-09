@@ -218,14 +218,24 @@ public class Hibernate implements RegistryFactory {
    *
    * @param pc the persistent class to look for components. It cannot be null.
    */
+  @SuppressWarnings("unchecked")
   private void configureTuplizers(final PersistentClass pc) {
 
     pc.addTuplizer(EntityMode.POJO, HibernateEntityTuplizer.class.getName());
 
-    for (
-        @SuppressWarnings("unchecked")
-        Iterator<Property> it = pc.getPropertyIterator(); it.hasNext();) {
-      Property property = it.next();
+    configureComponentTuplizers(pc.getPropertyIterator());
+  }
+
+  /** Configures the tuplizers for all component properties in the iterator.
+   *
+   * @param propertyIterator the property iterator. It cannot be null.
+   */
+  @SuppressWarnings("unchecked")
+  private void configureComponentTuplizers(
+      final Iterator<Property> propertyIterator) {
+
+    while (propertyIterator.hasNext()) {
+      Property property = propertyIterator.next();
       org.hibernate.mapping.Value value = property.getValue();
 
       if (value instanceof Collection) {
@@ -233,11 +243,16 @@ public class Hibernate implements RegistryFactory {
       }
 
       if (value instanceof org.hibernate.mapping.Component) {
-        // Note: components may be referenced from many entities, so we will
-        // be adding the same tuplizer multiple times. This seems to be safe,
-        // though.
-        ((org.hibernate.mapping.Component) value).addTuplizer(EntityMode.POJO,
-            HibernateComponentTuplizer.class.getName());
+        org.hibernate.mapping.Component component =
+            (org.hibernate.mapping.Component) value;
+
+        if (component.getTuplizerImplClassName(EntityMode.POJO) == null) {
+          // Tuplizer not yet configured for this component.
+          component.addTuplizer(EntityMode.POJO,
+              HibernateComponentTuplizer.class.getName());
+          configureComponentTuplizers(component.getPropertyIterator());
+        }
+
       } else {
         log.warn("Type of value is {}, not configuring tuplizer.",
             value.getClass());

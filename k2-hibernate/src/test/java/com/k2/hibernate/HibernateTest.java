@@ -107,19 +107,21 @@ public class HibernateTest {
     EntityRepository repo = application.getBean(
         "testmodule.entity1Repository", EntityRepository.class);
 
-    Value1Factory factory = new Value1Factory();
+    Value1Factory factory1 = new Value1Factory();
+    Value2Factory factory2 = new Value2Factory();
 
     Entity1 entity = new Entity1("an entity");
-    entity.addValue(factory.create("one value"));
-    entity.addValue(factory.create("another value"));
+    entity.addValue2(factory2.create("one value"));
+    entity.addValue2(factory2.create("another value"));
+    entity.setValue1(factory1.create("a value1 instance"));
     repo.save(entity);
     List<Entity1> result = repo.listEntity1();
 
     assertThat(result.size(), is(1));
-    assertThat(result.get(0).getValues().get(0).getInjected(),
-        is("the injected value"));
-    assertThat(result.get(0).getLastAddedValue().getInjected(),
-        is("the injected value"));
+    assertThat(result.get(0).getValue2List().get(0).getInjected(),
+        is("value 2 injected value"));
+    assertThat(result.get(0).getValue1().getInjected(),
+        is("value 1 injected value"));
   }
 
   @Test public void generateSchema() {
@@ -146,8 +148,10 @@ public class HibernateTest {
     assertThat(content, containsString("tm_fk_entity_1_longs_entity_1_id"));
 
     // An element collection with an embeddable.
-    assertThat(content, containsString("create table tm_entity_1_values"));
-    assertThat(content, containsString("tm_fk_entity_1_values_entity_1_id"));
+    assertThat(content, containsString(
+          "create table tm_entity_1_value_2_list"));
+    assertThat(content, containsString(
+          "tm_fk_entity_1_value_2_list_entity_1_id"));
 
     // A many to many relation table.
     assertThat(content, containsString("create table tm_entity_1_entities"));
@@ -211,6 +215,8 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity3.class);
       hibernateRegistry.registerPersistentClass(Value1.class,
           Value1Factory.class);
+      hibernateRegistry.registerPersistentClass(Value2.class,
+          Value2Factory.class);
 
       // These classes test the naming convention for single table per class
       // hierarchy.
@@ -250,6 +256,10 @@ public class HibernateTest {
     @Bean public Value1Factory value1Factory() {
       return new Value1Factory();
     }
+
+    @Bean public Value2Factory value2Factory() {
+      return new Value2Factory();
+    }
   };
 
   /////////////////////////////////////////////////////////////////////
@@ -271,10 +281,10 @@ public class HibernateTest {
   }
 
   /////////////////////////////////////////////////////////////////////
-  ///////////    The value 1  factory /////////////////////////////////
+  ///////////    The value factories /////////////////////////////////
   /////////////////////////////////////////////////////////////////////
   public static class Value1Factory {
-    private String injected = "the injected value";
+    private String injected = "value 1 injected value";
 
     Value1 create() {
       return new Value1(injected);
@@ -282,6 +292,18 @@ public class HibernateTest {
 
     Value1 create(final String value) {
       return new Value1(injected, value);
+    }
+  }
+
+  public static class Value2Factory {
+    private String injected = "value 2 injected value";
+
+    Value2 create() {
+      return new Value2(injected);
+    }
+
+    Value2 create(final String value) {
+      return new Value2(injected, value);
     }
   }
 

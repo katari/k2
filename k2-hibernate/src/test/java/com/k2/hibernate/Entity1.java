@@ -35,14 +35,14 @@ public class Entity1 {
   /** A sample element collection, to check generated fk names and component
    * tuplizers. */
   @ElementCollection(fetch = FetchType.EAGER)
-  private List<Value1> values = new LinkedList<>();
+  private List<Value2> value2List = new LinkedList<>();
 
   /** An embedded element to test component tuplizers. */
   @Embedded
   @AttributeOverrides({
     @AttributeOverride(name = "value", column = @Column(name = "value1_value"))
   })
-  private Value1 lastAddedValue = null;
+  private Value1 value1 = null;
 
   /** A sample entity collection, to check generated fk names. */
   @ManyToMany
@@ -73,25 +73,32 @@ public class Entity1 {
    *
    * @param someValue a sample value.
    */
-  public void addValue(final Value1 someValue) {
-    values.add(someValue);
-    lastAddedValue = someValue;
+  public void addValue2(final Value2 someValue) {
+    value2List.add(someValue);
+  }
+
+  /** Sets value1.
+   *
+   * @param aValue the value 1
+   */
+  public void setValue1(final Value1 aValue) {
+    value1 = aValue;
   }
 
   /** Obtains the list of values.
    *
    * @return a non-null list.
    */
-  public List<Value1> getValues() {
-    return values;
+  public List<Value2> getValue2List() {
+    return value2List;
   }
 
-  /** Gets the last added value to the list of values.
+  /** Gets the value1.
    *
-   * @return the last added value or null.
+   * @return the value1 or null.
    */
-  public Value1 getLastAddedValue() {
-    return lastAddedValue;
+  public Value1 getValue1() {
+    return value1;
   }
 
   /** Empty constructor. */
