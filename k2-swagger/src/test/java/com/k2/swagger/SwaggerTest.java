@@ -19,7 +19,6 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json
     .MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
-
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -71,10 +70,21 @@ public class SwaggerTest {
   }
 
   @Test public void specList() throws Exception {
-    String endpoint = baseUrl + "/swagger/";
+    assertList(baseUrl + "/swagger");
+  }
 
+  @Test public void specList_endsInSlash() throws Exception {
+    assertList(baseUrl + "/swagger/");
+  }
+
+  /** Checks that the generated page contains the swagger specs from both modules.
+   *
+   * @param endpoint the swagger endpoint. It cannot be null.
+   */
+  private void assertList(final String endpoint) throws Exception {
     String page;
     page = executor.execute(Request.Get(endpoint)).returnContent().asString();
+
     // Checks that the generated page contains the swagger spec from both
     // modules.
     assertThat(page, containsString("api1.yaml"));

@@ -74,7 +74,7 @@ public class SwaggerController {
    *
    * @return the full page with the spec documentation, never returns null.
    */
-  @RequestMapping(value = "", method = RequestMethod.GET,
+  @RequestMapping(value = "/*", method = RequestMethod.GET,
       produces="text/html;charset=UTF-8")
   public HttpEntity<String> swaggerUi() {
 
