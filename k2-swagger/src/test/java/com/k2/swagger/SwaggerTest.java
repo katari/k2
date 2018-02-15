@@ -77,7 +77,8 @@ public class SwaggerTest {
     assertList(baseUrl + "/swagger/");
   }
 
-  /** Checks that the generated page contains the swagger specs from both modules.
+  /** Checks that the generated page contains the swagger specs from both
+   * modules.
    *
    * @param endpoint the swagger endpoint. It cannot be null.
    */

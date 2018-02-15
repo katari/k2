@@ -22,7 +22,7 @@
     <property name="offCommentFormat" value="CHECKSTYLE-OFF\: ([\w\|]+)"/>
     <property name="onCommentFormat" value="CHECKSTYLE-ON\: ([\w\|]+)"/>
 
-    <property name="checkFormat" value="MagicNumber"/>
+    <property name="checkFormat" value="$1"/>
   </module>
 
   <!-- Checks that a package.html file exists for each package. Disabled
