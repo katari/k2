@@ -41,7 +41,7 @@ import org.springframework.context.support
  *
  * Module writers may optionally implement two interfaces: Registrator and
  * RegistryFactory. A registrator is a module that uses other modules registries
- * to register something into that module. K2 calss Registrator.addRegistrations
+ * to register something into that module. K2 calls Registrator.addRegistrations
  * on each module that implement Registrator before creating the spring
  * application context of each module.
  *
@@ -50,7 +50,7 @@ import org.springframework.context.support
  * K2 Hibernate module is a sample of a RegistryFactory.
  *
  * To register a module, application writers must create an instance of each
- * module and call the application contructor.
+ * module and call the application constructor.
  */
 public class Application {
 
@@ -229,6 +229,8 @@ public class Application {
 
   /** Returns the wrapped spring boot application, creating one if not already
    * created.
+   *
+   * Note: this is package access to make testing easier.
    *
    * @return a spring boot application, never returns null.
    */

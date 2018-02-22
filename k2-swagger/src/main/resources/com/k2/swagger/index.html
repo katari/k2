@@ -29,7 +29,11 @@
       if (!request.loadSpec) {
         // baseUrl of the form http://localhost:8080.
         baseUrl = window.location.protocol + '//'
-          + window.location.hostname + ":"  + window.location.port;
+          + window.location.hostname;
+        // If using a non-standard port, add it to the base url.
+        if (window.location.port != "") {
+          baseUrl = baseUrl + ":"  + window.location.port;
+        }
 
         // Where the current spec is downloaded from. Starts with the
         // module name.
