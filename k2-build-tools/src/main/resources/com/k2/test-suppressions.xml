@@ -10,14 +10,14 @@
   <suppress files="[/\\]target[/\\]" checks=".*"/>
 
   <!-- Exclusions for tests only. -->
-  <suppress checks="MagicNumber" files=".*(Test|Mother)\.java"/>
+  <suppress checks="MagicNumber" files=".*[\\/]src[\\/](test|it)[\\/]"/>
 
-  <suppress checks="AvoidStarImport" files=".*(Test|Mother)\.java"/>
-  <suppress checks="MethodName" files=".*(Test|Mother)\.java"/>
-  <suppress checks="JavadocType" files=".*(Test|Mother)\.java"/>
-  <suppress checks="JavadocMethod" files=".*(Test|Mother)\.java"/>
-  <suppress checks="JavadocVariable" files=".*(Test|Mother)\.java"/>
-  <suppress checks="JavadocStyle" files=".*(Test|Mother)\.java"/>
+  <suppress checks="AvoidStarImport" files=".*[\\/]src[\\/](test|it)[\\/]"/>
+  <suppress checks="MethodName" files=".*[\\/]src[\\/](test|it)[\\/]"/>
+  <suppress checks="JavadocType" files=".*[\\/]src[\\/](test|it)[\\/]"/>
+  <suppress checks="JavadocMethod" files=".*[\\/]src[\\/](test|it)[\\/]"/>
+  <suppress checks="JavadocVariable" files=".*[\\/]src[\\/](test|it)[\\/]"/>
+  <suppress checks="JavadocStyle" files=".*[\\/]src[\\/](test|it)[\\/]"/>
 
   <!-- vim: set ts=2 et sw=2 ai: -->
 </suppressions>
