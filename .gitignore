@@ -6,5 +6,6 @@ target
 .project
 .settings
 pom.xml.releaseBackup
+release.properties
 jacoco.exec
 
