@@ -17,6 +17,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.Banner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContextInitializer;
@@ -250,7 +251,8 @@ public class Application {
         applicationConfigurations.add(WebConfiguration.class);
       }
       applicationConfigurations.add(getClass());
-      app = new SpringApplication(applicationConfigurations.toArray()) {
+      app = new SpringApplication(
+          applicationConfigurations.toArray(new Class<?>[0])) {
 
         /** {@inheritDoc}
          *
@@ -270,7 +272,11 @@ public class Application {
         }
       };
       app.setBannerMode(Banner.Mode.OFF);
-      app.setWebEnvironment(isWebEnvironment);
+      if (isWebEnvironment) {
+        app.setWebApplicationType(WebApplicationType.SERVLET);
+      } else {
+        app.setWebApplicationType(WebApplicationType.NONE);
+      }
 
       configureInitializers(app);
 

@@ -14,8 +14,8 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.config
     .ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.context.embedded
-    .AnnotationConfigEmbeddedWebApplicationContext;
+import org.springframework.boot.web.servlet.context
+    .AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
@@ -26,7 +26,7 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
  * registers their servlets and filters.
  */
 class K2WebApplicationContext
-      extends AnnotationConfigEmbeddedWebApplicationContext {
+      extends AnnotationConfigServletWebServerApplicationContext {
 
   /** The instantiation strategy to use the k2 application instance instead of
    * its class as a spring configuration.

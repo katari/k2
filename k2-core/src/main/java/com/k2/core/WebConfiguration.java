@@ -9,12 +9,14 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded
-  .EmbeddedServletContainerFactory;
+
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.boot.context.embedded.jetty
-  .JettyEmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
+import org.springframework.boot.web.servlet.server
+    .ConfigurableServletWebServerFactory;
+
+import org.springframework.boot.web.embedded.jetty.JettyServerCustomizer;
+import org.springframework.boot.web.embedded.jetty
+    .JettyServletWebServerFactory;
 
 import org.springframework.context.annotation.Bean;
 
@@ -36,12 +38,12 @@ public class WebConfiguration {
    *
    * @return the factory, never null.
    */
-  @Bean public EmbeddedServletContainerFactory servletContainer(
+  @Bean public ConfigurableServletWebServerFactory servletContainer(
       @Value("${server.port:8081}") final int port,
       final JettyServerCustomizer serverCustomizer) {
 
-    JettyEmbeddedServletContainerFactory factory;
-    factory = new JettyEmbeddedServletContainerFactory("", port);
+    JettyServletWebServerFactory factory;
+    factory = new JettyServletWebServerFactory("", port);
     factory.addServerCustomizers(serverCustomizer);
     factory.addConfigurations(new AbstractConfiguration() {
       @Override
