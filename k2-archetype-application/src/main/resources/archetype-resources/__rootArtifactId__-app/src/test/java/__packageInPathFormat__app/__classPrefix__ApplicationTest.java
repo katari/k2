@@ -5,9 +5,6 @@
 
 package ${package}app;
 
-import java.util.Scanner;
-import java.net.URL;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.After;
@@ -17,6 +14,9 @@ import static org.hamcrest.CoreMatchers.is;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 
 import com.k2.core.Application;
 import com.k2.core.K2Environment;
@@ -49,11 +49,23 @@ public class ${classPrefix}ApplicationTest {
   }
 
   @Test public void helloController() throws Exception {
-    String endpoint = baseUrl + "/${classPrefix.toLowerCase()}/hi.html";
-    try (Scanner scanner = new Scanner(new URL(endpoint).openStream())) {
-      scanner.useDelimiter("\\A");
-      assertThat(scanner.next(), is("Hello there"));
-    }
+
+    Response response = RestAssured.given()
+        .header("Content-Type", "application/json")
+        .get(url("/${classPrefix.toLowerCase()}/hi.html"));
+
+    assertThat(response.getStatusCode(), is(200));
+    assertThat(response.getBody().asString(), is("Hello there"));
+  }
+
+  /** Builds a url to hit the application.
+   *
+   * @param relativeUrl the relative url. It cannot be null.
+   *
+   * @return a full url to query the application. It cannot be null.
+   */
+  private String url(final String relativeUrl) {
+    return baseUrl + relativeUrl;
   }
 }
 

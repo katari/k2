@@ -38,6 +38,12 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -58,12 +64,8 @@
           <!-- This configures the plugin when invoked from the command line.
                  -->
           <mainClass>${package}app.${classPrefix}Launcher</mainClass>
-          <!-- mainClass>com.avenida.marketplace.MarketplaceLauncher</mainClass  -->
-          <!-- Removes target repeated files which is extremely annoying in dev. -->
-          <!-- This explains why the module information is not shown correctly. -->
-          <!-- <addResources>false</addResources> -->
           <folders>
-            <folder>${rootArtifactId}-app/target/test-classes</folder>
+            <folder>target/test-classes</folder>
           </folders>
           <useTestClasspath>true</useTestClasspath>
         </configuration>

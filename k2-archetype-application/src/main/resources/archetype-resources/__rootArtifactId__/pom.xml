@@ -33,7 +33,39 @@
       <artifactId>junit</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+    </dependency>
+
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>repackage</id>
+            <goals><goal>repackage</goal></goals>
+            <phase>pre-integration-test</phase>
+            <configuration><classifier>boot</classifier></configuration>
+          </execution>
+        </executions>
+
+        <configuration>
+          <!-- This configures the plugin when invoked from the command line.
+                 -->
+          <mainClass>${package}.TestApplication</mainClass>
+          <folders>
+            <folder>target/test-classes</folder>
+          </folders>
+          <useTestClasspath>true</useTestClasspath>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <!-- vim: set ts=2 et sw=2 ai: -->
 
