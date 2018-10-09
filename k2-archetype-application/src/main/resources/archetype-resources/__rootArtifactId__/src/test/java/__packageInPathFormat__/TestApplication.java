@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.k2.core.Application;
 import com.k2.core.K2Environment;
+import com.k2.swagger.Swagger;
 
 /** A minimal test application for the ${classPrefix} module.
  *
@@ -33,7 +34,7 @@ public class TestApplication extends Application {
   private boolean initialized = false;
 
   TestApplication() {
-    super(new ${classPrefix}());
+    super(new Swagger(), new ${classPrefix}());
   }
 
   /** Runs the application, or return the already running one.

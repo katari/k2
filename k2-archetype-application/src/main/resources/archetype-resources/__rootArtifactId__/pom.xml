@@ -25,6 +25,11 @@
       <artifactId>k2-core</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.katari</groupId>
+      <artifactId>k2-swagger</artifactId>
+    </dependency>
+
     <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
     <!-- Test dependencies -->
     <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -42,6 +47,69 @@
 
   <build>
     <plugins>
+
+      <!-- Generates the swagger support classes from the swagger spec. --> 
+      <plugin>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-codegen-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <?m2e execute onConfiguration?>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>
+                ${project.basedir}/src/main/resources/${packageInPathFormat}/static/api.yaml
+              </inputSpec>
+              <language>spring</language>
+              <library>spring-mvc</library>
+
+              <modelPackage>${package}.swagger</modelPackage>
+              <invokerPackage>${package}.swagger</invokerPackage>
+              <apiPackage>${package}.swagger</apiPackage>
+
+              <modelNameSuffix>Dto</modelNameSuffix>
+
+              <addCompileSourceRoot>false</addCompileSourceRoot>
+              <ignoreFileOverride>
+                ${project.basedir}/src/main/swagger/ignore.conf
+              </ignoreFileOverride>
+              <configOptions>
+                <configPackage>${package}.swagger</configPackage>
+                <delegatePattern>true</delegatePattern>
+                <dateLibrary>java8</dateLibrary>
+                <useTags>true</useTags>
+              </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Makes the swagger generated classes available to the compiler. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.10</version>
+        <executions>
+          <execution>
+            <?m2e execute onConfiguration?>
+            <id>add_sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/main/java</source>
+                <source>target/generated-sources/swagger/src/main/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>

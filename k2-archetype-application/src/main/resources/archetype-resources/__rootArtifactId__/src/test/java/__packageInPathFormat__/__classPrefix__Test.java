@@ -19,6 +19,7 @@ import io.restassured.response.Response;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.containsString;
 
 public class ${classPrefix}Test {
 
@@ -38,6 +39,31 @@ public class ${classPrefix}Test {
   public void start() {
     assertThat(application, not(nullValue()));
     Assert.assertNotNull(application);
+  }
+
+  /** Tests that the swagger module is loaded and gets the correct yaml url.
+   */
+  @Test public void testSwagger() {
+
+    Response response = RestAssured.given()
+        .header("Content-Type", "application/json")
+        .get(url("/${classPrefix.toLowerCase()}/hi.html"));
+
+    assertThat(response.getStatusCode(), is(200));
+    assertThat(response.getBody().asString(), is("Hello there"));
+  }
+
+  /** Tests that sample swagger endpoint is alive and returns the correct
+   * value.
+   */
+  @Test public void swaggerGetSample() {
+
+    Response response = RestAssured.given()
+        .get(url("/${classPrefix.toLowerCase()}/sample"));
+
+    assertThat(response.getStatusCode(), is(200));
+    assertThat(response.getBody().asString(),
+        containsString("Name for id 10"));
   }
 
   /** Tests that the /${classPrefix.toLowerCase()}/hello.html endpoint is alive

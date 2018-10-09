@@ -592,7 +592,6 @@
   <properties>
     <slf4j.version>1.7.21</slf4j.version>
     <spring-boot.version>2.0.5.RELEASE</spring-boot.version>
-    <!-- spring.version>5.0.9.RELEASE</spring.version -->
     <spring.version>5.1.0.RELEASE</spring.version>
     <hibernate.version>5.2.7.Final</hibernate.version>
     <shiro.version>1.2.4</shiro.version>

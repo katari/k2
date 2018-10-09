@@ -8,6 +8,7 @@ package ${package}app;
 import org.springframework.context.annotation.Configuration;
 
 import com.k2.core.Application;
+import com.k2.swagger.Swagger;
 
 import ${package}.${classPrefix};
 
@@ -22,7 +23,7 @@ public class ${classPrefix}Application extends Application {
    * ${classPrefix} module.
    */
   public ${classPrefix}Application() {
-    super(new $classPrefix());
+    super(new Swagger(), new $classPrefix());
   }
 }
 
