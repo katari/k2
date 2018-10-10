@@ -18,6 +18,22 @@
 
   <name>K2 application archetype</name>
 
+  <dependencies>
+
+    <dependency>
+      <groupId>com.github.katari</groupId>
+      <artifactId>k2-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.katari</groupId>
+      <artifactId>k2-swagger</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
   <build>
     <extensions>
       <extension>
