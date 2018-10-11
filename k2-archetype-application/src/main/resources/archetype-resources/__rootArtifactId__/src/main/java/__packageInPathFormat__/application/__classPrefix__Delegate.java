@@ -14,6 +14,8 @@ import ${package}.swagger.SampleDto;
 /** The ${classPrefix} delegate implementation for swagger.
  */
 public class ${classPrefix}Delegate implements ${classPrefix}ApiDelegate {
+  /** The sample id. */
+  private static final long SAMPLE_ID = 10L;
 
   /** The getSample implementation.
    *
@@ -22,7 +24,7 @@ public class ${classPrefix}Delegate implements ${classPrefix}ApiDelegate {
   @Override
   public ResponseEntity<SampleDto> getSample() {
     SampleDto result = new SampleDto();
-    result.id(10L);
+    result.id(SAMPLE_ID);
     result.name("Name for id 10");
     return ResponseEntity.ok(result);
   }
