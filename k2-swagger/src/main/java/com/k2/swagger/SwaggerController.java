@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -50,6 +51,10 @@ public class SwaggerController {
    * spec, never null. */
   private List<SwaggerRegistry> registries;
 
+  /** The controller url context path, never null or empty.
+   */
+  private String contextPath;
+
   /** Constructor, creates a SwaggerController.
    *
    * @param theModuleDefinition the module definition of this module. It cannot
@@ -58,14 +63,19 @@ public class SwaggerController {
    * @param theRegistries the registries with the swagger specs. It cannot be
    * null.
    *
+   * @param theContextPath the application context path. It cannot be null but
+   * is empty by default when not configured.
+   *
    * @param isDebug true if this controller is operating en debug mode.
    */
   public SwaggerController(final ModuleDefinition theModuleDefinition,
-      final List<SwaggerRegistry> theRegistries, final boolean isDebug) {
+      final List<SwaggerRegistry> theRegistries, final String theContextPath,
+      final boolean isDebug) {
     Validate.notNull(theRegistries, "The registries cannot be null.");
     Validate.notNull(theModuleDefinition, "The definition cannot be null.");
     moduleDefinition = theModuleDefinition;
     registries = theRegistries;
+    contextPath = theContextPath;
     debug = isDebug;
   }
 
@@ -107,21 +117,42 @@ public class SwaggerController {
     }
 
     String urls = "";
-    for (SwaggerRegistry registry: registries) {
+    for (SwaggerRegistry registry : registries) {
       String idl = registry.getIdl();
       String path = registry.getRequestorPath();
       // Only non-null idls.
       if (idl != null) {
-        urls += "{name: \"" + path + "\", url:\"" + idl + "\"},\n";
+        urls += "{name: \"" + path + "\", url:\"" + contextPath + idl + "\"}"
+          + ",\n";
       }
     }
     String html;
     if (!urls.isEmpty()) {
       html = template.replaceAll("@@urls@@", "[" + urls + "]");
+      html = setWebjarsPathToRoot(html);
     } else {
       html = "No idl found - better remove the swagger module.";
     }
-    return new HttpEntity<String>(html);
+
+    return new HttpEntity<>(html);
+  }
+
+  /** Calculates the relative path where to look for webjars static content.
+   *
+   * @param template the index.html template with the @@webjarPath@@ to
+   * replace. It cannot be null nor empty.
+   *
+   * @return a String with the @@webjarPath@@ replaced, never null nor empty.
+   */
+  private String setWebjarsPathToRoot(final String template) {
+    String path = StringUtils.isBlank(contextPath) ? "/" : contextPath;
+    int count = Paths.get(path).getNameCount();
+    String webjarsPath = "../../";
+    for (int i = 0; i < count; i++) {
+      webjarsPath += "../";
+    }
+
+    return template.replaceAll("@@webjarsPath@@", webjarsPath);
   }
 }
 
