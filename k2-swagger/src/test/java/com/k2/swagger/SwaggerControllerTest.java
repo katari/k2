@@ -42,7 +42,8 @@ public class SwaggerControllerTest {
     List<SwaggerRegistry> registries = new LinkedList<>();
 
     SwaggerController controller;
-    controller = new SwaggerController(moduleDefinition, registries, false);
+    controller = new SwaggerController(moduleDefinition, registries, "",
+        false);
 
     String body = controller.swaggerUi().getBody();
 
@@ -54,14 +55,15 @@ public class SwaggerControllerTest {
     List<SwaggerRegistry> registries = Arrays.asList(registry1, registry2);
 
     SwaggerController controller;
-    controller = new SwaggerController(moduleDefinition, registries, false);
+    controller = new SwaggerController(moduleDefinition, registries,  "",
+        false);
 
     String body = controller.swaggerUi().getBody();
 
     assertThat(body, containsString("No idl found"));
   }
 
-  @Test public void swaggerUi_oneRegistry() {
+  @Test public void swaggerUi_oneRegistry_rootPath() {
 
     when(registry1.getIdl()).thenReturn("/module1/api.yaml");
     when(registry1.getRequestorPath()).thenReturn("module1");
@@ -69,12 +71,32 @@ public class SwaggerControllerTest {
     List<SwaggerRegistry> registries = Arrays.asList(registry1);
 
     SwaggerController controller;
-    controller = new SwaggerController(moduleDefinition, registries, false);
+    controller = new SwaggerController(moduleDefinition, registries,  "",
+        false);
 
     String body = controller.swaggerUi().getBody();
 
     assertThat(body, containsString("/module1/api.yaml"));
     assertThat(body, containsString("\"module1\""));
+    assertThat(body, containsString("../../webjars"));
+  }
+
+  @Test public void swaggerUi_oneRegistry_contextPath() {
+
+    when(registry1.getIdl()).thenReturn("/module1/api.yaml");
+    when(registry1.getRequestorPath()).thenReturn("module1");
+
+    List<SwaggerRegistry> registries = Arrays.asList(registry1);
+
+    SwaggerController controller;
+    controller = new SwaggerController(moduleDefinition, registries,  "context",
+        false);
+
+    String body = controller.swaggerUi().getBody();
+
+    assertThat(body, containsString("/module1/api.yaml"));
+    assertThat(body, containsString("\"module1\""));
+    assertThat(body, containsString("../../../webjars"));
   }
 
   @Test public void swaggerUi_twoRegistries() {
@@ -88,7 +110,8 @@ public class SwaggerControllerTest {
     List<SwaggerRegistry> registries = Arrays.asList(registry1, registry2);
 
     SwaggerController controller;
-    controller = new SwaggerController(moduleDefinition, registries, false);
+    controller = new SwaggerController(moduleDefinition, registries,  "",
+        false);
 
     String body = controller.swaggerUi().getBody();
 
@@ -108,7 +131,8 @@ public class SwaggerControllerTest {
     List<SwaggerRegistry> registries = Arrays.asList(registry1);
 
     SwaggerController controller;
-    controller = new SwaggerController(moduleDefinition, registries, true);
+    controller = new SwaggerController(moduleDefinition, registries,  "",
+        true);
 
     String body = controller.swaggerUi().getBody();
 
@@ -124,7 +148,8 @@ public class SwaggerControllerTest {
     List<SwaggerRegistry> registries = Arrays.asList(registry1);
 
     SwaggerController controller;
-    controller = new SwaggerController(moduleDefinition, registries, true);
+    controller = new SwaggerController(moduleDefinition, registries,  "",
+        true);
 
     String body = controller.swaggerUi().getBody();
 

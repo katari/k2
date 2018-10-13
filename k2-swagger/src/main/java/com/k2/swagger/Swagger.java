@@ -47,14 +47,18 @@ public class Swagger implements RegistryFactory {
    *
    * @param moduleDefinition the module definition. It cannot be null.
    *
+   * @param contextPath the application base path, by default is empty
+   *
    * @param debug true if in debug mode.
    *
    * @return the swagger main controller, never returns null.
    */
   @Bean SwaggerController controller(final ModuleDefinition moduleDefinition,
+      @Value("${server.contextPath:}") final String contextPath,
       @Value("${debug:#{false}}") final boolean debug) {
     Validate.notNull(registries, "The registries cannot be null.");
-    return new SwaggerController(moduleDefinition, registries, debug);
+    return new SwaggerController(moduleDefinition, registries, contextPath,
+        debug);
   }
 }
 
