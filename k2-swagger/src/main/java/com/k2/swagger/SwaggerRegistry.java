@@ -2,6 +2,9 @@
 
 package com.k2.swagger;
 
+import java.util.List;
+import java.util.LinkedList;
+
 import org.apache.commons.lang3.Validate;
 
 import com.k2.core.ModuleDefinition;
@@ -22,7 +25,7 @@ public class SwaggerRegistry {
    *
    * This should be set by a module by calling registerIdl.
    */
-  private String swaggerIdl;
+  private List<String> swaggerIdls = new LinkedList<>();
 
   /** Creates a new swagger registry.
    *
@@ -38,17 +41,16 @@ public class SwaggerRegistry {
    * @param idlUrl the module relative url of the idl file. It cannot be null.
    */
   public void registerIdl(final String idlUrl) {
-    Validate.isTrue(swaggerIdl == null, "Only one idl per module.");
     Validate.notNull(idlUrl, "The idl url cannot be null.");
-    swaggerIdl = idlUrl;
+    swaggerIdls.add(idlUrl);
   }
 
   /** Returns the module provided idl url.
    *
-   * @return the url, not null if the module called registerIdl.
+   * @return the list of urls, never null.
    */
-  String getIdl() {
-    return swaggerIdl;
+  List<String> getIdls() {
+    return swaggerIdls;
   }
 
   /** Returns the url base path of the requesting module.

@@ -30,11 +30,20 @@ public class SwaggerControllerTest {
   private SwaggerRegistry registry1;
   private SwaggerRegistry registry2;
 
+  private List<String> idls1;
+  private List<String> idls2;
+
   @Before public void setUp() {
     moduleDefinition = mock(ModuleDefinition.class);
 
     registry1 = mock(SwaggerRegistry.class);
     registry2 = mock(SwaggerRegistry.class);
+
+    idls1 = new LinkedList<String>();
+    idls1.add("/module1/api.yaml");
+
+    idls2 = new LinkedList<String>();
+    idls2.add("/module2/api.yaml");
   }
 
   @Test public void swaggerUi_noRegistries() {
@@ -63,7 +72,7 @@ public class SwaggerControllerTest {
 
   @Test public void swaggerUi_oneRegistry() {
 
-    when(registry1.getIdl()).thenReturn("/module1/api.yaml");
+    when(registry1.getIdls()).thenReturn(idls1);
     when(registry1.getRequestorPath()).thenReturn("module1");
 
     List<SwaggerRegistry> registries = Arrays.asList(registry1);
@@ -79,10 +88,10 @@ public class SwaggerControllerTest {
 
   @Test public void swaggerUi_twoRegistries() {
 
-    when(registry1.getIdl()).thenReturn("/module1/api.yaml");
+    when(registry1.getIdls()).thenReturn(idls1);
     when(registry1.getRequestorPath()).thenReturn("module1");
 
-    when(registry2.getIdl()).thenReturn("/module2/api.yaml");
+    when(registry2.getIdls()).thenReturn(idls2);
     when(registry2.getRequestorPath()).thenReturn("module2");
 
     List<SwaggerRegistry> registries = Arrays.asList(registry1, registry2);
@@ -100,7 +109,7 @@ public class SwaggerControllerTest {
   }
 
   @Test public void swaggerUi_debugLoadsFromFs() {
-    when(registry1.getIdl()).thenReturn("/module1/api.yaml");
+    when(registry1.getIdls()).thenReturn(idls1);
     when(registry1.getRequestorPath()).thenReturn("module1");
 
     when(moduleDefinition.getRelativePath()).thenReturn("src/test/html");
@@ -116,7 +125,7 @@ public class SwaggerControllerTest {
   }
 
   @Test public void swaggerUi_debugLoadsFromClasspath() {
-    when(registry1.getIdl()).thenReturn("/module1/api.yaml");
+    when(registry1.getIdls()).thenReturn(idls1);
     when(registry1.getRequestorPath()).thenReturn("module1");
 
     when(moduleDefinition.getRelativePath()).thenReturn("NON-EXISTING-DIR");
@@ -130,6 +139,24 @@ public class SwaggerControllerTest {
 
     assertThat(body, containsString("/module1/api.yaml"));
     assertThat(body, containsString("\"module1\""));
+  }
+
+  @Test public void swaggerUi_multpleIdls() {
+    idls1.add("/module1/api2.yaml");
+    when(registry1.getIdls()).thenReturn(idls1);
+    when(registry1.getRequestorPath()).thenReturn("module1");
+
+    List<SwaggerRegistry> registries = Arrays.asList(registry1);
+
+    SwaggerController controller;
+    controller = new SwaggerController(moduleDefinition, registries, true);
+
+    String body = controller.swaggerUi().getBody();
+
+    assertThat(body, containsString("/module1/api.yaml"));
+    assertThat(body, containsString("/module1/api2.yaml"));
+    assertThat(body, containsString("\"module1/api\""));
+    assertThat(body, containsString("\"module1/api2\""));
   }
 }
 

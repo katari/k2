@@ -4,6 +4,7 @@ package com.k2.swagger;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.File;
 
 import java.nio.file.Paths;
 import java.nio.file.Path;
@@ -108,11 +109,14 @@ public class SwaggerController {
 
     String urls = "";
     for (SwaggerRegistry registry: registries) {
-      String idl = registry.getIdl();
+
       String path = registry.getRequestorPath();
-      // Only non-null idls.
-      if (idl != null) {
-        urls += "{name: \"" + path + "\", url:\"" + idl + "\"},\n";
+
+      boolean useFileName = (registry.getIdls().size() > 1);
+
+      for (String idl: registry.getIdls()) {
+        urls += "{name: \"" + name(path, idl, useFileName)
+          + "\", url:\"" + idl + "\"},\n";
       }
     }
     String html;
@@ -122,6 +126,38 @@ public class SwaggerController {
       html = "No idl found - better remove the swagger module.";
     }
     return new HttpEntity<String>(html);
+  }
+
+  /** Determines a name for a swagger yaml spec.
+   *
+   * This operation builds the name based on the module name and the base yaml
+   * file name. It is used to dissambiguate a yaml name in cases that a module
+   * registers more than one yaml.
+   *
+   * @param moduleName the module name. It cannot be null.
+   *
+   * @param fileName the yaml file name. It cannot be null.
+   *
+   * @param useFileName whether to use the file name as part of the resulting
+   * name. The caller should set this to true if the module registered more
+   * than one yaml file.
+   *
+   * @return a name to use as a key to the yaml file in the swagger ui.
+   */
+  private String name(final String moduleName, final String fileName,
+      final boolean useFileName) {
+    String result = moduleName;
+
+    if (useFileName) {
+      File file = new File(fileName);
+      String baseFileName = file.getName();
+      int pos = baseFileName.lastIndexOf(".");
+      if (pos > 0 && pos < (baseFileName.length() - 1)) {
+        baseFileName = baseFileName.substring(0, pos);
+      }
+      result = moduleName + "/" + baseFileName;
+    }
+    return result;
   }
 }
 
