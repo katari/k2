@@ -13,6 +13,7 @@
   <suppress checks="MagicNumber" files=".*[\\/]src[\\/](test|it)[\\/]"/>
 
   <suppress checks="AvoidStarImport" files=".*[\\/]src[\\/](test|it)[\\/]"/>
+  <suppress checks="AvoidStaticImport" files=".*[\\/]src[\\/](test|it)[\\/]"/>
   <suppress checks="MethodName" files=".*[\\/]src[\\/](test|it)[\\/]"/>
   <suppress checks="JavadocType" files=".*[\\/]src[\\/](test|it)[\\/]"/>
   <suppress checks="JavadocMethod" files=".*[\\/]src[\\/](test|it)[\\/]"/>
