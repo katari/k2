@@ -19,10 +19,10 @@ import com.k2.swagger.Swagger;
  *
  * In integration tests, just add:
  *
- * application = TestApplication.startApplication();
+ * application = TestApplication.start();
  *
- * and use the application normally. You can call startApplication every time
- * you need, this class guarantees that there is only one instance.
+ * and use the application normally. You can call start every time you need,
+ * this class guarantees that there is only one instance.
  *
  * In maven, use TestApplication as the main class.
  */
