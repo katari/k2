@@ -51,7 +51,7 @@
           <!-- Fails build if checkstyle fails. -->
           <execution>
             <id>check</id>
-            <phase>process-sources</phase>
+            <phase>verify</phase>
             <goals><goal>check</goal></goals>
 
             <configuration>
