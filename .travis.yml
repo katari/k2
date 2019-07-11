@@ -1,7 +1,8 @@
 language: java
 
 jdk:
- - oraclejdk8
+ - oraclejdk9
+# oraclejdk8 stopped working trying to install jdk 8 from oracle.
 # - openjdk8
 
 script:
