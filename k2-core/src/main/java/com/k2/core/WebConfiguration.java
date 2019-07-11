@@ -33,6 +33,9 @@ public class WebConfiguration {
    *
    * @param port the port that jetty will listen on.
    *
+   * @param contextPath the jetty context path. Defaults to the root context
+   * path if not specified.
+   *
    * @param serverCustomizer a the server customizer that configures specific
    * options in jetty. See serverCustomizer(...). It cannot be null.
    *
@@ -40,10 +43,12 @@ public class WebConfiguration {
    */
   @Bean public ConfigurableServletWebServerFactory servletContainer(
       @Value("${server.port:8081}") final int port,
+      @Value("${server.contextPath:}") final String contextPath,
       final JettyServerCustomizer serverCustomizer) {
 
     JettyServletWebServerFactory factory;
     factory = new JettyServletWebServerFactory("", port);
+    factory.setContextPath(contextPath);
     factory.addServerCustomizers(serverCustomizer);
     factory.addConfigurations(new AbstractConfiguration() {
       @Override

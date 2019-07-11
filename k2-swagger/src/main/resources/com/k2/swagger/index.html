@@ -5,15 +5,15 @@
   <title>Swagger UI</title>
 
   <link rel="stylesheet" type="text/css"
-    href='../../webjars/swagger-ui/3.9.2/swagger-ui.css' >
+    href='webjars/swagger-ui/3.9.2/swagger-ui.css' >
 </head>
 
 <body>
 
   <div id="swagger-ui"></div>
 
-  <script src='../../webjars/swagger-ui/3.9.2/swagger-ui-bundle.js'> </script>
-  <script src='../../webjars/swagger-ui/3.9.2/swagger-ui-standalone-preset.js'>
+  <script src='webjars/swagger-ui/3.9.2/swagger-ui-bundle.js'> </script>
+  <script src='webjars/swagger-ui/3.9.2/swagger-ui-standalone-preset.js'>
   </script>
 
   <script type="text/javascript">
@@ -27,7 +27,7 @@
     var rewriteUrl = function(request) {
 
       if (!request.loadSpec) {
-        // baseUrl of the form http://localhost:8080.
+        // baseUrl ends up being of the form http://localhost:8080.
         baseUrl = window.location.protocol + '//'
           + window.location.hostname;
         // If using a non-standard port, add it to the base url.
@@ -35,17 +35,19 @@
           baseUrl = baseUrl + ":"  + window.location.port;
         }
 
-        // Where the current spec is downloaded from. Starts with the
-        // module name.
+        // Where the current spec is downloaded from. This is of the form
+        // './<moduleName>/'.
         specUrl = window.ui.specSelectors.url();
-        // Extract the module name from the spec url.
-        module = specUrl.substr(0, specUrl.substr(1).indexOf('/') + 1);
+        // Extract the module name from the spec url. This ends up being
+        // something like '<moduleName>/'
+        module = specUrl.substr(2, specUrl.substr(2).indexOf('/') + 1);
 
-        // Extract the path from the original request url.
+        // Extract the path (mainly, the swagger endpoint) from the original
+        // request url.
         requestPath = request.url.substr(baseUrl.length);
 
         // Build the new url adding the module name.
-        newRequestUrl = baseUrl + module + requestPath;
+        newRequestUrl = module + requestPath;
 
         request.url = newRequestUrl;
       }
@@ -54,6 +56,11 @@
 
     window.onload = function() {
       var urls = @@urls@@;
+
+      urls.forEach(function(url) {
+        // url.url = window.location.href + '..' + url.url;
+        url.url = '.' + url.url;
+      });
 
       // A configuration without the top bar.
       var swaggerConfiguration = {
@@ -80,6 +87,7 @@
 
       // Build a system
       const ui = SwaggerUIBundle(swaggerConfiguration);
+      // ui.api.setHost(window.location.origin + window.location.pathname + '..');
 
       window.ui = ui
     }

@@ -18,10 +18,15 @@ import org.slf4j.Logger;
 
 import org.apache.commons.lang3.Validate;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.view.RedirectView;
 
 import com.k2.core.ModuleDefinition;
 
@@ -30,6 +35,8 @@ import com.k2.core.ModuleDefinition;
  *
  * In debug mode, this controller loads the index.html from the file system.
  * Otherwise it loads it from the classpath.
+ *
+ * This uses index.html, that relies on the swagger endpoint to not end in '/'.
  */
 @Controller
 public class SwaggerController {
@@ -70,14 +77,37 @@ public class SwaggerController {
     debug = isDebug;
   }
 
-  /** Serves the '/' path with the documentation of each of the swagger specs
-   * registered in the swagger module.
+  /** Redirects /swagger/ to /swagger, removing the trailing '/'.
+   *
+   * @return a redirect view to /swagger/, never null.
+   */
+  @RequestMapping(value = "/", method = RequestMethod.GET)
+  public RedirectView redirect() {
+    return new RedirectView("/" + moduleDefinition.getModuleName(), true);
+  }
+
+  /** Serves the documentation of each of the swagger specs registered in the
+   * swagger module.
+   *
+   * I could not find a way to configure the path mapping to just be /swagger,
+   * so I mapped "/{anything}" and check that pathInfo is null.
+   *
+   * @param request the servlet request, never null.
    *
    * @return the full page with the spec documentation, never returns null.
+   *
+   * @throws NoHandlerFoundException when the url is not /swagger.
    */
   @RequestMapping(value = "/*", method = RequestMethod.GET,
       produces="text/html;charset=UTF-8")
-  public HttpEntity<String> swaggerUi() {
+  public HttpEntity<String> swaggerUi(
+      final HttpServletRequest request) throws NoHandlerFoundException {
+
+    // pathInfo is null for /swagger.
+    if (request.getPathInfo() != null) {
+      throw new NoHandlerFoundException(request.getMethod(),
+          request.getRequestURI().toString(), null);
+    }
 
     String template = null;
 
