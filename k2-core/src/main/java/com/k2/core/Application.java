@@ -92,7 +92,7 @@ public class Application {
    * @param moduleInstances the list of modules to bootstrap, cannot be null.
    */
   @SafeVarargs
-  protected Application(final Object ... moduleInstances) {
+  protected Application(final Object... moduleInstances) {
     Validate.notNull(modules, "The modules cannot be null");
     for (Object moduleInstance : moduleInstances) {
       modules.put(moduleInstance.getClass(),

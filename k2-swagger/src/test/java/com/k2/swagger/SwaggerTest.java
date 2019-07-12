@@ -102,7 +102,7 @@ public class SwaggerTest {
       super(new Swagger(), new Module1(), new Module2());
     }
 
-    public static void main(final String ... args) {
+    public static void main(final String... args) {
       Application testApplication = new TestApplication();
       testApplication.run(args);
     }

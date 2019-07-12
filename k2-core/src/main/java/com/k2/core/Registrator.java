@@ -24,6 +24,6 @@ public interface Registrator {
    * @param moduleContext the module context, used to look up for registration
    * implementations. It cannot be null.
    */
-  void addRegistrations(final ModuleContext moduleContext);
+  void addRegistrations(ModuleContext moduleContext);
 }
 

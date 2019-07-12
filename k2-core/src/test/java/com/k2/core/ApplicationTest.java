@@ -425,7 +425,7 @@ public class ApplicationTest {
       setLandingUrl("/testmodule/static/static-test.html");
     }
 
-    public static void main(final String ... args) {
+    public static void main(final String... args) {
       Application webApplication = new WebApplication();
       webApplication.run(args);
     }

@@ -180,7 +180,7 @@ public class ShiroTest {
       setLandingUrl("/test/hi.html");
     }
 
-    public static void main(final String ... args) {
+    public static void main(final String... args) {
       Application application = new TestApplication();
       application.run(new String[] {"--shiro.password=x"});
     }

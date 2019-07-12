@@ -9,20 +9,10 @@
 -->
 <module name="Checker">
 
+  <property name="cacheFile" value="${checkstyle.cache.file}"/>
+
   <module name="SuppressionFilter">
     <property name="file" value="${checkstyle.suppressions.file}"/>
-  </module>
-
-  <!-- Ignore checkstyle for lines between CHECKSTYLE:OFF and
-       CHECKSTYLE:ON -->
-  <module name="SuppressionCommentFilter">
-    <!-- property name="offCommentFormat" value="CHECKSTYLE:RELAX"/>
-    <property name="onCommentFormat" value="CHECKSTYLE:ON"/ -->
-
-    <property name="offCommentFormat" value="CHECKSTYLE-OFF\: ([\w\|]+)"/>
-    <property name="onCommentFormat" value="CHECKSTYLE-ON\: ([\w\|]+)"/>
-
-    <property name="checkFormat" value="$1"/>
   </module>
 
   <!-- Checks that a package.html file exists for each package. Disabled
@@ -50,10 +40,17 @@
 
   <module name="TreeWalker">
 
-    <property name="cacheFile" value="${checkstyle.cache.file}"/>
+    <!-- Ignore checkstyle for lines between CHECKSTYLE:OFF and
+       CHECKSTYLE:ON -->
+    <module name="SuppressionCommentFilter">
+      <!-- property name="offCommentFormat" value="CHECKSTYLE:RELAX"/>
+      <property name="onCommentFormat" value="CHECKSTYLE:ON"/ -->
 
-    <!-- this is needed by the SuppressionCommentFilter -->
-    <module name="FileContentsHolder"/>
+      <property name="offCommentFormat" value="CHECKSTYLE-OFF\: ([\w\|]+)"/>
+      <property name="onCommentFormat" value="CHECKSTYLE-ON\: ([\w\|]+)"/>
+
+      <property name="checkFormat" value="$1"/>
+    </module>
 
     <!-- Checks for Javadoc comments. -->
     <module name="JavadocMethod">
@@ -118,7 +115,7 @@
     <module name="ParenPad"/>
     <module name="TypecastParenPad"/>
     <module name="WhitespaceAfter"/>
-      <!-- Removed WILDCARD_TYPE so we can write Class<?>. -->
+    <!-- Removed WILDCARD_TYPE so we can write Class<?>. -->
     <!-- module name="WhitespaceAround">
       <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR,
         BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON,
@@ -169,6 +166,13 @@
     <module name="TodoComment"/>
     <module name="UpperEll"/>
     <module name="GenericWhitespace"/>
+
+    <module name="Regexp">
+      <!-- We do not allow any print to the console in the code. -->
+      <property name="format" value="System\.out\.print"/>
+      <property name="illegalPattern" value="true"/>
+      <property name="ignoreComments" value="true"/>
+    </module>
 
   </module>
 </module>
