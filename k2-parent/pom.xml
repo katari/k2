@@ -171,7 +171,7 @@
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
-        <version>1.5.12</version>
+        <version>1.5.22</version>
       </dependency>
 
       <dependency>
@@ -580,9 +580,11 @@
         </plugin>
 
         <plugin>
-          <groupId>io.swagger</groupId>
+          <!-- Note: version 3.0.9 and 3.0.10 have a bug when the payload is an
+               array -->
+          <groupId>io.swagger.codegen.v3</groupId>
           <artifactId>swagger-codegen-maven-plugin</artifactId>
-          <version>2.3.1</version>
+          <version>3.0.8</version>
         </plugin>
 
       </plugins>
@@ -592,13 +594,10 @@
   <properties>
     <slf4j.version>1.7.21</slf4j.version>
     <spring-boot.version>2.0.5.RELEASE</spring-boot.version>
-    <spring.version>5.1.0.RELEASE</spring.version>
-    <hibernate.version>5.2.7.Final</hibernate.version>
+    <spring.version>5.1.8.RELEASE</spring.version>
+    <hibernate.version>5.4.3.Final</hibernate.version>
     <shiro.version>1.2.4</shiro.version>
-    <jackson.version>2.9.7</jackson.version>
-    <swagger-codegen.version>2.3.1</swagger-codegen.version>
-    <swagger-codegen-generators.version>1.0.3</swagger-codegen-generators.version>
-
+    <jackson.version>2.9.9</jackson.version>
 
     <!-- Sonar -->
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>

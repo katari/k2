@@ -50,8 +50,9 @@
 
       <!-- Generates the swagger support classes from the swagger spec. --> 
       <plugin>
-        <groupId>io.swagger</groupId>
+        <groupId>io.swagger.codegen.v3</groupId>
         <artifactId>swagger-codegen-maven-plugin</artifactId>
+        <version>3.0.8</version>
         <executions>
           <execution>
             <?m2e execute onConfiguration?>
