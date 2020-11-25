@@ -38,6 +38,9 @@
     <property name="message" value="Line has trailing spaces."/>
   </module>
 
+  <!-- Checks for Size Violations. -->
+  <module name="LineLength"/>
+
   <module name="TreeWalker">
 
     <!-- Ignore checkstyle for lines between CHECKSTYLE:OFF and
@@ -53,10 +56,7 @@
     </module>
 
     <!-- Checks for Javadoc comments. -->
-    <module name="JavadocMethod">
-      <!-- Don't complain if we document RuntimeExceptions. -->
-      <property name="allowUndeclaredRTE" value="true" />
-    </module>
+    <module name="JavadocMethod" />
     <module name="JavadocType" />
     <module name="JavadocVariable" />
     <module name="JavadocStyle">
@@ -100,7 +100,6 @@
     <module name="AvoidStaticImport"/>
 
     <!-- Checks for Size Violations. -->
-    <module name="LineLength"/>
     <module name="MethodLength"/>
 
     <!-- This is not very common, and very difficult to avoid when happens. -->
