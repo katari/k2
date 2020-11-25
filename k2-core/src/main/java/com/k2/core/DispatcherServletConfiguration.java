@@ -21,6 +21,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support
     .PropertySourcesPlaceholderConfigurer;
+import org.springframework.format.FormatterRegistry;
+import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.http.converter.HttpMessageConverter;
 
 /** Custom configuration for the dispatcher servlet application context
@@ -42,6 +44,17 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
    * WebMvcConfigurationSupport.
    */
   @Value(value = "${debug:false}") private boolean debug;
+
+  /** Whether to use iso as the default date format.
+   *
+   * Injected by spring.
+   *
+   * NOTE: Avoid @Value in attributes as plage in your code. I could not
+   * find another way, given that this is used in an overriden operation from
+   * WebMvcConfigurationSupport.
+   */
+  @Value(value = "${k2.mvc.use-iso-format:false}")
+      private boolean useIsoFormat;
 
   /** The module definition that owns the DispatcherServlet of this
    * configuration.
@@ -111,6 +124,22 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
   @Bean
   public static PropertySourcesPlaceholderConfigurer propertyConfigIn() {
     return new PropertySourcesPlaceholderConfigurer();
+  }
+
+  /** Configure the date time formatter to support iso conventions, if it is
+   * configured so.
+   *
+   * To use iso format, set the property k2.mvc.use-iso-format to true.
+   *
+   * {@inheritDoc}
+   */
+  @Override
+  protected void addFormatters(final FormatterRegistry registry) {
+    if (useIsoFormat) {
+      DateTimeFormatterRegistrar r = new DateTimeFormatterRegistrar();
+      r.setUseIsoFormat(true);
+      r.registerFormatters(registry);
+    }
   }
 }
 

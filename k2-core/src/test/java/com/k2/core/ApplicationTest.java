@@ -4,9 +4,11 @@ package com.k2.core;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.time.OffsetDateTime;
 
 import java.io.IOException;
 
+import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -26,7 +28,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
@@ -62,7 +64,8 @@ public class ApplicationTest {
     initCalled = false;
     application = new WebApplication();
     application.run(new String[] {"--server.port=0",
-      "--logging.file=target/log/test-overriden.log"});
+      "--logging.file=target/log/test-overriden.log",
+      "--k2.mvc.use-iso-format=true"});
 
     K2Environment environment;
     environment = application.getBean("environment", K2Environment.class);
@@ -123,27 +126,27 @@ public class ApplicationTest {
     log.trace("Leaving getApplication_afterRun");
   }
 
-  @Test public void run_privateBean() {
+  @Test public void getBean_privateBean() {
     assertThat(application.getBean(Module1.class, "testBean", Object.class)
         .toString(), is("Module 1 private bean"));
   }
 
-  @Test public void run_globalBean() {
+  @Test public void getBean_globalBean() {
     assertThat(application.getBean("globalBean", String.class),
         is("Global bean"));
   }
 
-  @Test public void run_exposedBean() {
+  @Test public void getBean_exposedBean() {
     assertThat(application.getBean("testmodule.exposedBean",
         StringHolder.class).toString(), is("Module 1 exposed bean"));
   }
 
-  @Test public void run_renamedExposedBean() {
+  @Test public void getBean_renamedExposedBean() {
     assertThat(application.getBean("testmodule.renamedExposedBean",
           StringHolder.class).toString(), is("Module 1 renamed exposed bean"));
   }
 
-  @Test public void run_injectedWithExposedBean() {
+  @Test public void getBean_injectedWithExposedBean() {
     assertThat(
         application.getBean(Module2.class, "dependencyOnModule1", Object.class)
         .toString(), is("Module 2 dependency on Module 1 exposed bean"));
@@ -170,6 +173,14 @@ public class ApplicationTest {
 
   @Test public void module2Controller() throws Exception {
     String endpoint = baseUrl + "/applicationTest.Module2/hi.html";
+    String page;
+    page = executor.execute(Request.Get(endpoint)).returnContent().asString();
+    assertThat(page, is("Module 1 exposed bean, 1, 2"));
+  }
+
+  @Test public void converter() throws Exception {
+    String endpoint = baseUrl + "/applicationTest.Module2/hi.html"
+        + "?when=2020-12-20T23:59:59.999-05:00";
     String page;
     page = executor.execute(Request.Get(endpoint)).returnContent().asString();
     assertThat(page, is("Module 1 exposed bean, 1, 2"));
@@ -322,7 +333,9 @@ public class ApplicationTest {
     }
 
     @RequestMapping(value = "/hi.html", method = RequestMethod.GET)
-    public HttpEntity<String> hi() {
+    public HttpEntity<String> hi(
+        @RequestParam(name = "when", required = false)
+        final OffsetDateTime when) {
       return new HttpEntity<String>(response);
     }
   };
@@ -370,29 +383,26 @@ public class ApplicationTest {
     }
 
     @Bean public StringHolder dependencyOnModule1(
-        @Qualifier("testmodule.exposedBean")
-            final StringHolder module1ExposedBean) {
-      return new StringHolder("Module 2 dependency on "
-            + module1ExposedBean.toString());
+        @Qualifier("testmodule.exposedBean") final StringHolder name) {
+      return new StringHolder("Module 2 dependency on " + name.toString());
     }
 
     @Bean public Module2Controller controller2(
-        @Qualifier("testmodule.exposedBean")
-          final StringHolder response) {
+        @Qualifier("testmodule.exposedBean") final StringHolder response) {
       return new Module2Controller(response);
     }
 
-    @Bean public FilterRegistrationBean suffix1Filter() {
-      FilterRegistrationBean filter;
-      filter = new FilterRegistrationBean(new SuffixFilter(", 1"));
+    @Bean public FilterRegistrationBean<Filter> suffix1Filter() {
+      FilterRegistrationBean<Filter> filter;
+      filter = new FilterRegistrationBean<Filter>(new SuffixFilter(", 1"));
       filter.setName("suffix1");
       filter.setOrder(2);
       return filter;
     }
 
-    @Bean public FilterRegistrationBean suffix2Filter() {
-      FilterRegistrationBean filter;
-      filter = new FilterRegistrationBean(new SuffixFilter(", 2"));
+    @Bean public FilterRegistrationBean<Filter> suffix2Filter() {
+      FilterRegistrationBean<Filter> filter;
+      filter = new FilterRegistrationBean<Filter>(new SuffixFilter(", 2"));
       filter.setName("suffix2");
       filter.setOrder(1);
       return filter;
