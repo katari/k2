@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support
@@ -39,22 +40,11 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
    *
    * Injected by spring.
    *
-   * NOTE: Avoid @Value in attributes as plage in your code. I could not
+   * NOTE: Avoid @Value in attributes as plague in your code. I could not
    * find another way, given that this is used in an overriden operation from
    * WebMvcConfigurationSupport.
    */
   @Value(value = "${debug:false}") private boolean debug;
-
-  /** Whether to use iso as the default date format.
-   *
-   * Injected by spring.
-   *
-   * NOTE: Avoid @Value in attributes as plage in your code. I could not
-   * find another way, given that this is used in an overriden operation from
-   * WebMvcConfigurationSupport.
-   */
-  @Value(value = "${k2.mvc.use-iso-format:false}")
-      private boolean useIsoFormat;
 
   /** The module definition that owns the DispatcherServlet of this
    * configuration.
@@ -131,10 +121,17 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
    *
    * To use iso format, set the property k2.mvc.use-iso-format to true.
    *
+   * Implementation note: this looks for the property in the parent context
+   * environment. This lets modules independently set the iso flag, by
+   * configuring in its own private properties file.
+   *
    * {@inheritDoc}
    */
   @Override
   protected void addFormatters(final FormatterRegistry registry) {
+    ApplicationContext parent = getApplicationContext().getParent();
+    boolean useIsoFormat = parent.getEnvironment().getProperty(
+        "k2.mvc.use-iso-format", Boolean.class, false);
     if (useIsoFormat) {
       DateTimeFormatterRegistrar r = new DateTimeFormatterRegistrar();
       r.setUseIsoFormat(true);

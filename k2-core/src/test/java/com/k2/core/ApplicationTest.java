@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
@@ -64,8 +65,7 @@ public class ApplicationTest {
     initCalled = false;
     application = new WebApplication();
     application.run(new String[] {"--server.port=0",
-      "--logging.file=target/log/test-overriden.log",
-      "--k2.mvc.use-iso-format=true"});
+      "--logging.file=target/log/test-overriden.log"});
 
     K2Environment environment;
     environment = application.getBean("environment", K2Environment.class);
@@ -366,6 +366,7 @@ public class ApplicationTest {
   // A module named applicationTest.Module2 (the generated name) that exposes a
   // bean named exposedBean and has a bean that depends on
   // testmodule.exposedBean.
+  @PropertySource("classpath:com/k2/core/module2.properties")
   public static class Module2 implements Registrator {
 
     public void addRegistrations(final ModuleContext moduleContext) {
