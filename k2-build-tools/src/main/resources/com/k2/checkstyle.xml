@@ -56,6 +56,10 @@
     </module>
 
     <!-- Checks for Javadoc comments. -->
+    <module name="MissingJavadocMethod" >
+      <property name="scope" value="private"/>
+    </module>
+    <module name="MissingJavadocType" />
     <module name="JavadocMethod" />
     <module name="JavadocType" />
     <module name="JavadocVariable" />
