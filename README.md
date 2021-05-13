@@ -61,7 +61,8 @@ your application.
 
 
     mvn -B archetype:generate -DarchetypeGroupId=com.github.katari \
-      -DarchetypeArtifactId=k2-archetype-application -DarchetypeCatalog=local \
+      -DarchetypeArtifactId=k2-archetype-application -DarchetypeVersion=0.1.8 \ 
+      -DarchetypeCatalog=local \
       -DgroupId=sample -DartifactId=sample \
       -Dpackage=sample -DclassPrefix=Sample -Dversion=0.1-SNAPSHOT
 
@@ -69,7 +70,8 @@ your application.
 This is the command we used to generate the k2-shiro module:
 
     mvn -B archetype:generate -DarchetypeGroupId=com.github.katari \
-      -DarchetypeArtifactId=k2-archetype-module -DarchetypeCatalog=local \
+      -DarchetypeArtifactId=k2-archetype-module -DarchetypeVersion=0.1.8 \
+      -DarchetypeCatalog=local \
       -DgroupId=com.github.katari -DartifactId=k2-shiro \
       -Dpackage=com.k2.shiro -DclassPrefix=Shiro -Dversion=0.1-SNAPSHOT
 

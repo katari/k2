@@ -77,7 +77,7 @@ public class TestApplication extends Application {
     // Ignore all calls to stop, just in case.
   }
 
-  public static void main(final String ... args) {
+  public static void main(final String... args) {
     application = new TestApplication();
     application.run(args);
   }
