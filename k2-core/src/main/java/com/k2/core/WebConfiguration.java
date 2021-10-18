@@ -106,12 +106,12 @@ public class WebConfiguration {
    * shows a hardcoded message.
    */
   @Bean(name = "k2.homeServlet")
-  public ServletRegistrationBean homeServlet(
+  public ServletRegistrationBean<HomeServlet> homeServlet(
       @Qualifier("k2.landingUrl") final String landingUrl) {
 
     HomeServlet homeServlet = new HomeServlet(landingUrl);
-    ServletRegistrationBean servletBean;
-    servletBean = new ServletRegistrationBean(homeServlet, false, "");
+    ServletRegistrationBean<HomeServlet> servletBean;
+    servletBean = new ServletRegistrationBean<>(homeServlet, false, "");
     servletBean.setOrder(Integer.MAX_VALUE);
     return servletBean;
   }

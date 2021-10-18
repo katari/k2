@@ -27,6 +27,7 @@ import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.ImplicitPrimaryKeyJoinColumnNameSource;
 import org.hibernate.boot.model.naming.ImplicitTenantIdColumnNameSource;
 import org.hibernate.boot.model.naming.ImplicitUniqueKeyNameSource;
+import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 
 /** A k2 provided implicit naming strategy that mainly converts java camel case
@@ -75,6 +76,23 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   public Identifier determineJoinTableName(
       final ImplicitJoinTableNameSource source) {
     return apply(delegate.determineJoinTableName(source));
+  }
+
+  /** Easy hook to build an Identifier using the keyword safe IdentifierHelper.
+   *
+   * @param stringForm The String form of the name
+   *
+   * @param buildingContext Access to the IdentifierHelper
+   *
+   * @return The identifier
+   */
+  Identifier toIdentifier(final String stringForm,
+      final  MetadataBuildingContext buildingContext) {
+    return buildingContext.getMetadataCollector()
+        .getDatabase()
+        .getJdbcEnvironment()
+        .getIdentifierHelper()
+        .toIdentifier(stringForm);
   }
 
   @Override
@@ -145,20 +163,27 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
 
   /** Creates a foreign key name concatenating "fk", the table name and the
    * list of columns of the table in alphabetical order, all separated by '_'.
+   *
+   * It uses the user provided identifier, if any.
    */
   @Override
   public Identifier determineForeignKeyName(
       final ImplicitForeignKeyNameSource source) {
-    StringBuilder fkName = new StringBuilder();
 
-    fkName.append("fk_");
-    fkName.append(source.getTableName().getText());
-    for (Identifier columnName : sort(source.getColumnNames())) {
-      fkName.append("_").append(columnName.getText());
+    Identifier result = source.getUserProvidedIdentifier();
+    if (result == null) {
+      StringBuilder fkName = new StringBuilder();
+
+      fkName.append("fk_");
+      fkName.append(source.getTableName().getText());
+      for (Identifier columnName : sort(source.getColumnNames())) {
+        fkName.append("_").append(columnName.getText());
+      }
+      result = apply(source.getBuildingContext().getObjectNameNormalizer()
+          .normalizeIdentifierQuoting(toIdentifier(fkName.toString(),
+              source.getBuildingContext())));
     }
-    return apply(source.getBuildingContext().getObjectNameNormalizer()
-        .normalizeIdentifierQuoting(Identifier.toIdentifier(
-            fkName.toString())));
+    return result;
   }
 
   /** Creates a unique key name concatenating "uk" and the list of columns of
@@ -174,8 +199,8 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
       fkName.append("_").append(columnName.getText());
     }
     return apply(source.getBuildingContext().getObjectNameNormalizer()
-        .normalizeIdentifierQuoting(Identifier.toIdentifier(
-            fkName.toString())));
+        .normalizeIdentifierQuoting(toIdentifier(fkName.toString(),
+            source.getBuildingContext())));
   }
 
   /** Creates an index name concatenating "idx" and the list of columns of the
@@ -191,8 +216,8 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
     }
 
     return apply(source.getBuildingContext().getObjectNameNormalizer()
-        .normalizeIdentifierQuoting(Identifier.toIdentifier(
-            fkName.toString())));
+        .normalizeIdentifierQuoting(toIdentifier(fkName.toString(),
+            source.getBuildingContext())));
   }
 
   /** Alphabetically sorts a list of identifiers.
@@ -245,7 +270,7 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
    * @return a name converted form camel case to underscore separated words. It
    * never returns null.
    */
-  private Identifier apply(final Identifier name) {
+  protected Identifier apply(final Identifier name) {
     LinkedList<String> result = new LinkedList<>();
     String nameText = name.getText();
     for (String part : StringUtils.splitByCharacterTypeCamelCase(nameText)) {

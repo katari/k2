@@ -46,7 +46,9 @@ public class HibernateTest {
   @Before public void setUp() {
     log.trace("Entering setUp");
     application = new TestApplication();
-    application.run(new String[] {"--server.port=0"});
+    application.run(new String[] {"--server.port=0",
+        "--hibernate.k2.namingStrategy"
+        + "=com.k2.hibernate.K2DbImplicitNamingStrategyComponentPath"});
     log.trace("Leaving setUp");
   }
 
@@ -136,8 +138,10 @@ public class HibernateTest {
       throw new RuntimeException("target/schema.ddl not found", e);
     }
 
+    // Check the correct prefix for table and unique index.
     assertThat(content, containsString("create table tm_entity_1"));
     assertThat(content, containsString("tm_uk_entity_3_unique_value"));
+
     assertThat(content, containsString("create index idx_entity_1_id"));
 
     // A ManyToOne joined by column.
@@ -147,15 +151,30 @@ public class HibernateTest {
     assertThat(content, containsString("create table tm_entity_1_longs"));
     assertThat(content, containsString("tm_fk_entity_1_longs_entity_1_id"));
 
+    // Check the correct prefix for an embedded column.
+    assertThat(content, not(containsString("&&")));
+    // The Entity1 contains an embedable named value1.
+    assertThat(content, containsString("value_1_value varchar"));
+    // An embedded with another embedded.
+    assertThat(content, containsString("value_1_value_2_value varchar"));
+
     // An element collection with an embeddable.
     assertThat(content, containsString(
           "create table tm_entity_1_value_2_list"));
     assertThat(content, containsString(
           "tm_fk_entity_1_value_2_list_entity_1_id"));
+    assertThat(content, containsString("value_2_list_value varchar"));
 
-    // A many to many relation table.
-    assertThat(content, containsString("create table tm_entity_1_entities"));
-    assertThat(content, containsString("tm_fk_entity_1_entities_entities_id"));
+    // A many to many relation table and fk.
+    assertThat(content, containsString(
+        "create table tm_entity_1_many_entities"));
+    assertThat(content, containsString(
+        "tm_fk_entity_1_many_entities_many_entities_id"));
+    assertThat(content, containsString(
+        "tm_fk_entity_1_many_entities_entity_1_id"));
+
+    // A one to many fk, specified with @ForeignKey.
+    assertThat(content, containsString("tm_fk_entity_1_one"));
 
     // A single table per class hierarchy table name.
     assertThat(content, containsString(
