@@ -5,6 +5,9 @@ package com.k2.hibernate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.AttributeConverter;
+
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -186,6 +189,13 @@ public class Hibernate implements RegistryFactory {
       metadataBuilder.applyImplicitNamingStrategy(
           new K2DbImplicitNamingStrategy());
     }
+    for (HibernateRegistry hibernateRegistry: registries) {
+      for (Class<? extends AttributeConverter<?, ?>> converter
+          : hibernateRegistry.getConverters()) {
+        metadataBuilder.applyAttributeConverter(converter, true);
+      }
+    }
+
     Metadata metadata = metadataBuilder.build();
 
     // This map contains the full list of tables and the prefix to add to their

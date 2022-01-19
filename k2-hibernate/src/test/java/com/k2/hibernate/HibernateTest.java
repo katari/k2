@@ -105,6 +105,26 @@ public class HibernateTest {
     assertThat(result.get(1).getValue(), is("second value"));
   }
 
+  @Test public void save_withConverter() {
+    EntityRepository repo = application.getBean(
+        "testmodule.entity1Repository", EntityRepository.class);
+
+    Entity2Factory factory = application.getBean(Module1.class,
+        "entity2Factory", Entity2Factory.class);
+
+    repo.save(factory.create("first value"));
+    List<Entity2> result = repo.listEntity2();
+
+    // Phone and Address are custom data types with a converter.
+    assertThat(result.size(), is(1));
+    assertThat(result.get(0).getParameter().toString(),
+        is("Entity 2 factory parameter"));
+    assertThat(result.get(0).getPhone(), is(not(nullValue())));
+    assertThat(result.get(0).getPhone().getNumber(), is("555-5555"));
+    assertThat(result.get(0).getAddress(), is(not(nullValue())));
+    assertThat(result.get(0).getAddress().getStreet(), is("Corrientes"));
+  }
+
   @Test public void save_withComponentFactory() {
     EntityRepository repo = application.getBean(
         "testmodule.entity1Repository", EntityRepository.class);
@@ -256,6 +276,9 @@ public class HibernateTest {
       // inheritance.
       hibernateRegistry.registerPersistentClass(TablePerClassBaseClass.class);
       hibernateRegistry.registerPersistentClass(TablePerClassSubClass1.class);
+
+      hibernateRegistry.registerConverter(Phone.Converter.class);
+      hibernateRegistry.registerConverter(Address.Converter.class);
     }
 
     @Bean @Public public EntityRepository entity1Repository(
