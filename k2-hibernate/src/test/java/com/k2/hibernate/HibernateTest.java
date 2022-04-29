@@ -178,6 +178,10 @@ public class HibernateTest {
     // An embedded with another embedded.
     assertThat(content, containsString("value_1_value_2_value varchar"));
 
+    // An embedded without the attribute prefix, using @SkipComponentPrefix.
+    assertThat(content, containsString("value varchar"));
+    assertThat(content, containsString("value_2_value varchar"));
+
     // An element collection with an embeddable.
     assertThat(content, containsString(
           "create table tm_entity_1_value_2_list"));
@@ -252,6 +256,7 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
+      hibernateRegistry.registerPersistentClass(Entity4.class);
       hibernateRegistry.registerPersistentClass(Value1.class,
           Value1Factory.class);
       hibernateRegistry.registerPersistentClass(Value2.class,

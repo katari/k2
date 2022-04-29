@@ -2,6 +2,7 @@
 
 package com.k2.hibernate;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -27,6 +28,7 @@ import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.ImplicitPrimaryKeyJoinColumnNameSource;
 import org.hibernate.boot.model.naming.ImplicitTenantIdColumnNameSource;
 import org.hibernate.boot.model.naming.ImplicitUniqueKeyNameSource;
+import org.hibernate.boot.model.source.spi.AttributePath;
 import org.hibernate.boot.spi.MetadataBuildingContext;
 import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 
@@ -51,6 +53,8 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   /** The base implementation of this naming strategy, never null. */
   private ImplicitNamingStrategy delegate;
 
+  private Class<?> currentClass = null;
+
   /** Constructor, creates a new naming strategy.
    */
   K2DbImplicitNamingStrategy() {
@@ -69,6 +73,12 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   @Override
   public Identifier determinePrimaryTableName(
       final ImplicitEntityNameSource source) {
+    try {
+      currentClass = Class.forName(source.getEntityNaming().getClassName());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Error", e);
+    }
+
     return apply(delegate.determinePrimaryTableName(source));
   }
 
@@ -122,7 +132,55 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   @Override
   public Identifier determineBasicColumnName(
       final ImplicitBasicColumnNameSource source) {
-    return apply(delegate.determineBasicColumnName(source));
+
+    AttributePath entityAttribute = source.getAttributePath();
+    while (!entityAttribute.getParent().isRoot()) {
+      entityAttribute = entityAttribute.getParent();
+    }
+
+    Field[] fields = null;
+    Field columnField = null;
+
+    fields = currentClass.getDeclaredFields();
+
+    for (Field field : fields) {
+      if (field.getName().equals(entityAttribute.getProperty())) {
+        columnField = field;
+        break;
+      }
+    }
+
+    SkipComponentPrefix skip = null;
+    if (columnField != null) {
+      skip = columnField.getAnnotation(SkipComponentPrefix.class);
+    }
+
+    AttributePath attributePath = source.getAttributePath();
+    if (skip != null) {
+      String propertyName = attributePath.getFullPath();
+      propertyName = propertyName.replaceAll("^[^.]*\\.", "");
+      attributePath = AttributePath.parse(propertyName);
+    }
+
+    final AttributePath path = attributePath;
+
+    Identifier result = apply(delegate.determineBasicColumnName(
+        new ImplicitBasicColumnNameSource() {
+          @Override
+          public MetadataBuildingContext getBuildingContext() {
+            return source.getBuildingContext();
+          }
+          @Override
+          public AttributePath getAttributePath() {
+            return path;
+          }
+          @Override
+          public boolean isCollectionElement() {
+            return source.isCollectionElement();
+          }
+        }));
+
+    return result;
   }
 
   @Override
