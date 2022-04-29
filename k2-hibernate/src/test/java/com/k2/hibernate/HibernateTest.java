@@ -174,9 +174,17 @@ public class HibernateTest {
     // Check the correct prefix for an embedded column.
     assertThat(content, not(containsString("&&")));
     // The Entity1 contains an embedable named value1.
-    assertThat(content, containsString("value_1_value varchar"));
+    assertThat(content, containsString(" value_1_value varchar"));
     // An embedded with another embedded.
-    assertThat(content, containsString("value_1_value_2_value varchar"));
+    assertThat(content, containsString(" value_1_value_2_value varchar"));
+
+    // An embedded without the attribute prefix, using @Prefix(skip = true).
+    assertThat(content, containsString(" value varchar"));
+    assertThat(content, containsString(" value_2_value varchar"));
+
+    // An embedded with a custom attribute prefix, using @Prefix("new_value").
+    assertThat(content, containsString(" value varchar"));
+    assertThat(content, containsString(" value_2_value varchar"));
 
     // An element collection with an embeddable.
     assertThat(content, containsString(
@@ -252,6 +260,7 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
+      hibernateRegistry.registerPersistentClass(Entity4.class);
       hibernateRegistry.registerPersistentClass(Value1.class,
           Value1Factory.class);
       hibernateRegistry.registerPersistentClass(Value2.class,
