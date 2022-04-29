@@ -18,7 +18,7 @@ public class Value1 {
 
   /** A sample nested embeddable. */
   @Embedded
-  private Value2 value2;
+  private Value2 attribute2;
 
   /** The value.
    *

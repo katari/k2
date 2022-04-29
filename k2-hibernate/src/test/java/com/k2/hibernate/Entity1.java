@@ -38,7 +38,7 @@ public class Entity1 {
 
   /** An embedded element to test component tuplizers. */
   @Embedded
-  private Value1 value1 = null;
+  private Value1 attribute1 = null;
 
   /** A sample entity collection, to check generated fk names. */
   @ManyToMany
@@ -81,8 +81,8 @@ public class Entity1 {
    *
    * @param aValue the value 1
    */
-  public void setValue1(final Value1 aValue) {
-    value1 = aValue;
+  public void setAttribute1(final Value1 aValue) {
+    attribute1 = aValue;
   }
 
   /** Obtains the list of values.
@@ -97,8 +97,8 @@ public class Entity1 {
    *
    * @return the value1 or null.
    */
-  public Value1 getValue1() {
-    return value1;
+  public Value1 getAttribute1() {
+    return attribute1;
   }
 
   /** Empty constructor. */

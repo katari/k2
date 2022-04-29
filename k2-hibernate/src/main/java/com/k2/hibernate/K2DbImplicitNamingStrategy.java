@@ -224,7 +224,7 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
    *
    * @param identifiers the list of identifiers to sort. It cannot be null.
    *
-   * @return a new arry with the identifiers alphabetically sorted. Never
+   * @return a new array with the identifiers alphabetically sorted. Never
    * returns null.
    */
   private Identifier[] sort(final List<Identifier> identifiers) {

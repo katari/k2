@@ -135,14 +135,14 @@ public class HibernateTest {
     Entity1 entity = new Entity1("an entity");
     entity.addValue2(factory2.create("one value"));
     entity.addValue2(factory2.create("another value"));
-    entity.setValue1(factory1.create("a value1 instance"));
+    entity.setAttribute1(factory1.create("a value1 instance"));
     repo.save(entity);
     List<Entity1> result = repo.listEntity1();
 
     assertThat(result.size(), is(1));
     assertThat(result.get(0).getValue2List().get(0).getInjected(),
         is("value 2 injected value"));
-    assertThat(result.get(0).getValue1().getInjected(),
+    assertThat(result.get(0).getAttribute1().getInjected(),
         is("value 1 injected value"));
   }
 
@@ -173,10 +173,25 @@ public class HibernateTest {
 
     // Check the correct prefix for an embedded column.
     assertThat(content, not(containsString("&&")));
-    // The Entity1 contains an embedable named value1.
-    assertThat(content, containsString("value_1_value varchar"));
-    // An embedded with another embedded.
-    assertThat(content, containsString("value_1_value_2_value varchar"));
+    // From Entity1, an embedable named value1.
+    assertThat(content, containsString(" attribute_1_value varchar"));
+    // From Entity1, an embedded with another embedded.
+    assertThat(content, containsString(
+        " attribute_1_attribute_2_value varchar"));
+
+    // From Entity4, an embedded without the attribute prefix,
+    // using @Prefix(skip = true).
+    assertThat(content, containsString(" value varchar"));
+    assertThat(content, containsString(" attribute_2_value varchar"));
+
+    // From Entity4, an embedded with a custom attribute prefix, using
+    // @Prefix("prefix").
+    assertThat(content, containsString(" prefix_value varchar"));
+    assertThat(content, containsString(" prefix_attribute_2_value varchar"));
+
+    // From Entity4, an embedded with a custom attribute prefix, using
+    // @Prefix.
+    assertThat(content, containsString(" attribute_3_value varchar"));
 
     // An element collection with an embeddable.
     assertThat(content, containsString(
@@ -252,6 +267,7 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
+      hibernateRegistry.registerPersistentClass(Entity4.class);
       hibernateRegistry.registerPersistentClass(Value1.class,
           Value1Factory.class);
       hibernateRegistry.registerPersistentClass(Value2.class,
