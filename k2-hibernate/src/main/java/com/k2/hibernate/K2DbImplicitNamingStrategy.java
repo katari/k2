@@ -48,6 +48,12 @@ import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
  */
 public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
 
+  /** The max identifier length for fk and unique indexes.
+   *
+   * This max length accounts for a module short name of max 3 characters.
+   */
+  private static final int MAX_LENGTH = 60;
+
   /** The base implementation of this naming strategy, never null. */
   private ImplicitNamingStrategy delegate;
 
@@ -179,9 +185,18 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
       for (Identifier columnName : sort(source.getColumnNames())) {
         fkName.append("_").append(columnName.getText());
       }
-      result = apply(source.getBuildingContext().getObjectNameNormalizer()
-          .normalizeIdentifierQuoting(toIdentifier(fkName.toString(),
-              source.getBuildingContext())));
+
+      if (fkName.length() <= MAX_LENGTH) {
+        result = apply(source.getBuildingContext().getObjectNameNormalizer()
+            .normalizeIdentifierQuoting(toIdentifier(fkName.toString(),
+                source.getBuildingContext())));
+      } else {
+        String name = delegate.determineForeignKeyName(source).getText();
+
+        result = source.getBuildingContext().getObjectNameNormalizer()
+            .normalizeIdentifierQuoting(toIdentifier("fk_" + name,
+                source.getBuildingContext()));
+      }
     }
     return result;
   }
@@ -192,15 +207,25 @@ public class K2DbImplicitNamingStrategy implements ImplicitNamingStrategy {
   @Override
   public Identifier determineUniqueKeyName(
       final ImplicitUniqueKeyNameSource source) {
-    StringBuilder fkName = new StringBuilder();
-    fkName.append("uk_");
-    fkName.append(source.getTableName());
+    StringBuilder ukName = new StringBuilder();
+    ukName.append("uk_");
+    ukName.append(source.getTableName());
     for (Identifier columnName : source.getColumnNames()) {
-      fkName.append("_").append(columnName.getText());
+      ukName.append("_").append(columnName.getText());
     }
-    return apply(source.getBuildingContext().getObjectNameNormalizer()
-        .normalizeIdentifierQuoting(toIdentifier(fkName.toString(),
-            source.getBuildingContext())));
+    Identifier result;
+
+    if (ukName.length() <= MAX_LENGTH) {
+      result = apply(source.getBuildingContext().getObjectNameNormalizer()
+          .normalizeIdentifierQuoting(toIdentifier(ukName.toString(),
+              source.getBuildingContext())));
+    } else {
+      String name = delegate.determineUniqueKeyName(source).getText();
+      result = source.getBuildingContext().getObjectNameNormalizer()
+          .normalizeIdentifierQuoting(toIdentifier("uk_" + name,
+              source.getBuildingContext()));
+    }
+    return result;
   }
 
   /** Creates an index name concatenating "idx" and the list of columns of the

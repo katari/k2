@@ -16,9 +16,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /** Sample entity to use in HibernateTest. */
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {
+    "this_is_a_very_long_attribute_name_to_force_a_long_unique_index_name",
+    "value"})})
 public class Entity1 {
 
   /** The pk. */
@@ -26,6 +31,9 @@ public class Entity1 {
 
   /** a sample column. */
   private String value;
+
+  /** a sample with a very long name to test unique index key length. */
+  private String thisIsAVeryLongAttributeNameToForceALongUniqueIndexName;
 
   /** A sample element collection, to check generated fk names. */
   @ElementCollection
@@ -43,6 +51,10 @@ public class Entity1 {
   /** A sample entity collection, to check generated fk names. */
   @ManyToMany
   private List<Entity2> manyEntities = null;
+
+  /** A sample entity collection, to check generated fk with long names. */
+  @ManyToMany
+  private List<Entity2> thisIsAVeryLongAttributeNameToForceALongFkName = null;
 
   @ManyToOne
   @JoinColumn(foreignKey = @ForeignKey(name="fk_entity_1_one"))

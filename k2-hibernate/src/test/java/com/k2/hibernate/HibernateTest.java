@@ -208,6 +208,15 @@ public class HibernateTest {
     assertThat(content, containsString(
         "tm_fk_entity_1_many_entities_entity_1_id"));
 
+    // An fk with a hash based name, due to the length of the named fk.
+    assertThat(content, containsString(
+        "tm_fk_FKlddkpgwfnp7wlotpf0yqaljel"));
+
+    // A unique index with a hash based name, due to the length of the named
+    // index.
+    assertThat(content, containsString(
+        "tm_uk_UKeg4k8257gpcfnds92jccasn6b"));
+
     // A one to many fk, specified with @ForeignKey.
     assertThat(content, containsString("tm_fk_entity_1_one"));
 
