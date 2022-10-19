@@ -21,7 +21,7 @@
       <groupId>org.jacoco</groupId>
       <artifactId>org.jacoco.agent</artifactId>
       <classifier>runtime</classifier>
-      <version>0.7.8</version>
+      <version>0.8.10</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -495,7 +495,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.8</version>
+        <version>0.8.10</version>
 
         <configuration>
           <destFile>${sonar.jacoco.reportPaths}</destFile>
