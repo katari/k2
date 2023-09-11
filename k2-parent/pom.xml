@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.github.katari</groupId>
     <artifactId>k2</artifactId>
-    <version>0.1.9-SNAPSHOT</version>
+    <version>0.1.13-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -21,7 +21,7 @@
       <groupId>org.jacoco</groupId>
       <artifactId>org.jacoco.agent</artifactId>
       <classifier>runtime</classifier>
-      <version>0.7.8</version>
+      <version>0.8.10</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -53,7 +53,26 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.1.7</version>
+        <version>1.4.11</version>
+      </dependency>
+
+      <dependency>
+        <groupId>jakarta.annotation</groupId>
+        <artifactId>jakarta.annotation-api</artifactId>
+        <version>2.1.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>4.0.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>4.0.1</version>
+        <scope>runtime</scope>
       </dependency>
 
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -126,9 +145,9 @@
       </dependency>
 
       <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <version>1.4.191</version>
+        <groupId>org.hsqldb</groupId>
+        <artifactId>hsqldb</artifactId>
+        <version>${hsqldb.version}</version>
         <scope>test</scope>
       </dependency>
 
@@ -138,13 +157,13 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.12.v20180830</version>
+        <version>11.0.15</version>
       </dependency>
 
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>3.1.0</version>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>6.0.0</version>
       </dependency>
 
       <dependency>
@@ -171,40 +190,28 @@
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
-        <version>1.5.22</version>
+        <version>1.6.11</version>
       </dependency>
 
       <dependency>
         <groupId>org.webjars</groupId>
         <artifactId>swagger-ui</artifactId>
-        <version>3.24.3</version>
+        <version>5.3.1</version>
       </dependency>
 
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
       <!-- Validation related dependencies (swagger) -->
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
       <dependency>
-        <groupId>javax.validation</groupId>
-        <artifactId>validation-api</artifactId>
-        <version>1.1.0.Final</version>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>3.0.2</version>
       </dependency>
 
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-validator</artifactId>
-        <version>5.4.0.Final</version>
-      </dependency>
-
-      <dependency>
-        <groupId>javax.el</groupId>
-        <artifactId>javax.el-api</artifactId>
-        <version>2.2.4</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish.web</groupId>
-        <artifactId>javax.el</artifactId>
-        <version>2.2.4</version>
+        <version>6.2.5.Final</version>
       </dependency>
 
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -375,34 +382,34 @@
         <artifactId>spring-framework-bom</artifactId>
         <version>${spring.version}</version>
       </dependency>
-      
+
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	    <!-- Maven related dependencies -->
-	    <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
-	    <dependency>
-	      <groupId>org.apache.maven</groupId>
-	      <artifactId>maven-plugin-api</artifactId>
-	      <version>3.3.9</version>
-	    </dependency>
-	    
-	    <dependency>
-	      <groupId>org.apache.maven.plugin-tools</groupId>
-	      <artifactId>maven-plugin-annotations</artifactId>
-	      <version>3.4</version>
-	      <scope>provided</scope>
-	    </dependency>
-	    
-	    <dependency>
-	      <groupId>org.apache.maven</groupId>
-	      <artifactId>maven-project</artifactId>
-	      <version>2.2.1</version>
-	    </dependency>
-	    
-	    <dependency>
-	      <groupId>org.apache.maven</groupId>
-	      <artifactId>maven-core</artifactId>
-	      <version>3.3.9</version>
-	    </dependency>
+      <!-- Maven related dependencies -->
+      <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>3.3.9</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>3.4</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-project</artifactId>
+        <version>2.2.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>3.3.9</version>
+      </dependency>
 
       <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
       <!-- Test dependencies -->
@@ -481,7 +488,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.4</version>
+        <version>3.3.2</version>
+        <configuration>
+          <doclint>none</doclint>
+        </configuration>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -495,7 +505,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.8</version>
+        <version>0.8.10</version>
 
         <configuration>
           <destFile>${sonar.jacoco.reportPaths}</destFile>
@@ -584,7 +594,7 @@
                array -->
           <groupId>io.swagger.codegen.v3</groupId>
           <artifactId>swagger-codegen-maven-plugin</artifactId>
-          <version>3.0.14</version>
+          <version>3.0.46</version>
         </plugin>
 
       </plugins>
@@ -592,10 +602,14 @@
   </build>
 
   <properties>
-    <slf4j.version>1.7.21</slf4j.version>
-    <spring-boot.version>2.0.5.RELEASE</spring-boot.version>
-    <spring.version>5.1.8.RELEASE</spring.version>
-    <hibernate.version>5.4.19.Final</hibernate.version>
+    <slf4j.version>2.0.7</slf4j.version>
+    <spring-boot.version>3.1.2</spring-boot.version>
+    <spring.version>6.0.11</spring.version>
+
+    <!-- DB Related -->
+    <hibernate.version>6.2.7.Final</hibernate.version>
+    <hsqldb.version>2.7.2</hsqldb.version>
+
     <shiro.version>1.2.4</shiro.version>
     <jackson.version>2.9.9</jackson.version>
 
@@ -611,4 +625,3 @@
   <!-- vim: set ts=2 et sw=2 ai: -->
 
 </project>
-

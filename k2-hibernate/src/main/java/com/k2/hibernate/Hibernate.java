@@ -2,45 +2,47 @@
 
 package com.k2.hibernate;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.springframework.stereotype.Component;
-
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
-import org.hibernate.EntityMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataBuilder;
 import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.internal.BootstrapContextImpl;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.MetaAttribute;
 import org.hibernate.mapping.PersistentClass;
-import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.Table.ForeignKeyKey;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.metamodel.spi.ManagedTypeRepresentationResolver;
 import org.hibernate.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 
 import com.k2.core.K2Environment;
-import com.k2.core.RegistryFactory;
 import com.k2.core.ModuleDefinition;
 import com.k2.core.Public;
+import com.k2.core.RegistryFactory;
 
 /** The hibernate module.
  *
@@ -69,11 +71,15 @@ import com.k2.core.Public;
  *
  * The module reads the following properties:
  *
- * hibernate.k2.usePrefix: if true, adds the module short name to each table
- * and foreign key name. Defaults to true.
+ * hibernate.k2.namingStrategy the fully qualified class name of the naming
+ * strategy to use. If null, it complies with the hibernate.k2.useK2Naming
+ * attribute.
  *
  * hibernate.k2.useK2Naming: if true, uses the k2 database naming convention:
  * all lower case, underscore separated.
+ *
+ * hibernate.k2.usePrefix: if true, adds the module short name to each table
+ * and foreign key name. Defaults to true.
  */
 @Component("hibernate")
 @PropertySource("classpath:/com/k2/hibernate/hibernate.properties")
@@ -122,8 +128,11 @@ public class Hibernate implements RegistryFactory {
    * @param environment the environment provided by k2 core, used by hibernate
    * to obtain its properties.
    *
+   * @param implicitNamingStrategy the fully qualified class name of the naming
+   * strategy to use. If null, it complies with the useK2Naming attribute.
+   *
    * @param useK2Naming true to use the k2 database naming conventions. False
-   * uses hibernate default.
+   * uses hibernate default. Ignored if implicitNamingStrategy is set.
    *
    * @param usePrefix true to add the module short name as a prefix to each
    * database object. Defaults to true.
@@ -134,6 +143,8 @@ public class Hibernate implements RegistryFactory {
    */
   @Bean public Metadata metadata(
       final K2Environment environment,
+      @Value("${hibernate.k2.namingStrategy:#{null}}")
+        final String implicitNamingStrategy,
       @Value("${hibernate.k2.useK2Naming:#{true}}") final boolean useK2Naming,
       @Value("${hibernate.k2.usePrefix:#{true}}") final boolean usePrefix,
       final DataSource dataSource) {
@@ -142,10 +153,12 @@ public class Hibernate implements RegistryFactory {
       .applySetting("hibernate.current_session_context_class",
           "org.springframework.orm.hibernate5.SpringSessionContext")
       .applySettings(environment.getProperties("hibernate"))
-      .addService(this.getClass(), new HibernateRegistryLocator(registries))
+      .addService(HibernateRegistryLocator.class,
+        new HibernateRegistryLocator(registries))
       .build();
 
-    // Collects the entity prefixes from the hibernate registries.
+    // Collects the entity prefixes from the hibernate registries. This maps a
+    // fully qualified class name to the k2 module short name.
     Map<Class<?>, String> prefixes = new HashMap<>();
     MetadataSources metadataSources = new MetadataSources(registry);
     for (HibernateRegistry hibernateRegistry: registries) {
@@ -156,12 +169,30 @@ public class Hibernate implements RegistryFactory {
     }
 
     // Builds the hibernate metadata.
-    MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder()
-        .enableNewIdentifierGeneratorSupport(false);
-    if (useK2Naming) {
+    MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder();
+    if (implicitNamingStrategy != null) {
+      ImplicitNamingStrategy namingStrategy;
+      try {
+        Class<? extends ImplicitNamingStrategy> type;
+        type = Class.forName(implicitNamingStrategy)
+            .asSubclass(ImplicitNamingStrategy.class);
+        namingStrategy =  type.newInstance();
+      } catch (InstantiationException | IllegalAccessException
+          | ClassNotFoundException e) {
+        throw new RuntimeException(
+            "Error instantiating class " + implicitNamingStrategy, e);
+      }
+      metadataBuilder.applyImplicitNamingStrategy(namingStrategy);
+    } else if (useK2Naming) {
       metadataBuilder.applyImplicitNamingStrategy(
           new K2DbImplicitNamingStrategy());
     }
+    for (HibernateRegistry hibernateRegistry: registries) {
+      for (Class converter : hibernateRegistry.getConverters()) {
+        metadataBuilder.applyAttributeConverter(converter, true);
+      }
+    }
+
     Metadata metadata = metadataBuilder.build();
 
     // This map contains the full list of tables and the prefix to add to their
@@ -195,8 +226,6 @@ public class Hibernate implements RegistryFactory {
         tablePrefixes.put(table, prefix);
       }
 
-      configureTuplizers(pc);
-
       MetaAttribute attribute = new MetaAttribute("k2.moduleContext");
       Map<String, MetaAttribute> attributes = new HashMap<>();
       attributes.put("k2.moduleContext",  attribute);
@@ -210,54 +239,9 @@ public class Hibernate implements RegistryFactory {
       }
     }
 
+    configureManageTypeRepresentationResolver(metadata);
+
     return metadata;
-  }
-
-  /** Configures the tuplizers for the persistent class and its referenced
-   * components.
-   *
-   * @param pc the persistent class to look for components. It cannot be null.
-   */
-  @SuppressWarnings("unchecked")
-  private void configureTuplizers(final PersistentClass pc) {
-
-    pc.addTuplizer(EntityMode.POJO, HibernateEntityTuplizer.class.getName());
-
-    configureComponentTuplizers(pc.getPropertyIterator());
-  }
-
-  /** Configures the tuplizers for all component properties in the iterator.
-   *
-   * @param propertyIterator the property iterator. It cannot be null.
-   */
-  @SuppressWarnings("unchecked")
-  private void configureComponentTuplizers(
-      final Iterator<Property> propertyIterator) {
-
-    while (propertyIterator.hasNext()) {
-      Property property = propertyIterator.next();
-      org.hibernate.mapping.Value value = property.getValue();
-
-      if (value instanceof Collection) {
-        value = ((Collection) value).getElement();
-      }
-
-      if (value instanceof org.hibernate.mapping.Component) {
-        org.hibernate.mapping.Component component =
-            (org.hibernate.mapping.Component) value;
-
-        if (component.getTuplizerImplClassName(EntityMode.POJO) == null) {
-          // Tuplizer not yet configured for this component.
-          component.addTuplizer(EntityMode.POJO,
-              HibernateComponentTuplizer.class.getName());
-          configureComponentTuplizers(component.getPropertyIterator());
-        }
-
-      } else {
-        log.warn("Type of value is {}, not configuring tuplizer.",
-            value.getClass());
-      }
-    }
   }
 
   /** Renames the table and its related elements based on the module prefix.
@@ -284,6 +268,60 @@ public class Hibernate implements RegistryFactory {
       UniqueKey uniqueKey = uniqueKeys.next();
       uniqueKey.setName(prefix + "_" + uniqueKey.getName());
     }
+  }
+
+  /** Configures a custom ManagedTypeRepresentationResolver to customize
+   * hibernate instantiation of entities and components through Factories.
+   *
+   * @param metadata The hibernates' metadata. Cannot be null.
+   * Cannot be null.
+   */
+  private void configureManageTypeRepresentationResolver(
+      final Metadata metadata) {
+    BootstrapContextImpl context = getField(metadata, "bootstrapContext");
+    ManagedTypeRepresentationResolver originalRepresentationResolver =
+      getField(context, "representationStrategySelector");
+
+    K2ManagedTypeRepresentationResolver customResolver =
+      new K2ManagedTypeRepresentationResolver(originalRepresentationResolver);
+    for (HibernateRegistry hibernateRegistry : registries) {
+      customResolver.registerHibernateRegistry(hibernateRegistry);
+    }
+    setField(context, "representationStrategySelector", customResolver);
+  }
+
+  /** Reflection helper method that injects a value into field in the target
+   * object.
+   *
+   * @param target The target object. Cannot be null.
+   *
+   * @param fieldName that must be present in the target object.
+   * Cannot be null.
+   *
+   * @param newValue The value to be set in the target field.
+   */
+  private void setField(final Object target, final String fieldName,
+                        final Object newValue) {
+    Field field = ReflectionUtils.findField(target.getClass(), fieldName);
+    field.setAccessible(true);
+    ReflectionUtils.setField(field, target, newValue);
+  }
+
+  /** Gets a field from an object by reflection.
+   *
+   * @param object from which the field must be gotten. Cannot be null.
+   *
+   * @param fieldName that must be present in the target object.
+   * Cannot be blank.
+   *
+   * @return the value hold in the field.
+   *
+   * @param <T> The return type to avoid casts.
+   */
+  private <T> T getField(final Object object, final String fieldName) {
+    Field field = ReflectionUtils.findField(object.getClass(), fieldName);
+    field.setAccessible(true);
+    return (T) ReflectionUtils.getField(field, object);
   }
 
   /** Hibernate SessionFactory.
@@ -320,17 +358,6 @@ public class Hibernate implements RegistryFactory {
   @Public @Bean(name = "dataSource")
   public DataSource dataSource(final PoolProperties poolProperties) {
     return new DataSource(poolProperties);
-  }
-
-  /** Bean to generate the schema based on hibernate configuration.
-   *
-   * @param metadata the properly initialized hibernate metadata. It cannot be
-   * null.
-   *
-   * @return an instance of SchemaGenerator, never null.
-   */
-  @Bean SchemaGenerator schema(final Metadata metadata) {
-    return new SchemaGenerator(metadata);
   }
 
   /** A hibernate service that exposes the hibernate module registries to the

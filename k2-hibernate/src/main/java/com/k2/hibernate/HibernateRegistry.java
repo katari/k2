@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
 
+import jakarta.persistence.AttributeConverter;
+
 import org.apache.commons.lang3.Validate;
 
 import com.k2.core.ModuleDefinition;
@@ -56,8 +58,18 @@ public class HibernateRegistry {
    * for instantiating entities.
    *
    * Hibernate looks for an operation named 'create' with no arguments.
+   *
+   * This is never null.
    */
   private Map<Class<?>, Class<?>> factories = new HashMap<>();
+
+  /** The attribute converters that converts entity attribute state
+   * into the database column representation and back again.
+   *
+   * This is never null.
+   */
+  private List<Class<? extends AttributeConverter<?, ?>>> converters
+      = new LinkedList<>();
 
   /** Constructor, creates a hibernate registry.
    *
@@ -95,12 +107,32 @@ public class HibernateRegistry {
     factories.put(theClass, factory);
   }
 
+  /** Registers an attribute converter that converts entity attribute state
+   * into the database column representation and back again.
+   *
+   * See AttributeConverter on ways to use this feature.
+   *
+   * @param converter the converter to register. It cannot be null.
+   */
+  public void registerConverter(
+      final Class<? extends AttributeConverter<?, ?>> converter) {
+    converters.add(converter);
+  }
+
   /** Returns the list of persistent classes.
    *
    * @return the persistent classes, never returns null.
    */
   List<Class<?>> getPersistentClasses() {
     return persistentClasses;
+  }
+
+  /** Returns the list of converters.
+   *
+   * @return the converters, never returns null.
+   */
+  List<Class<? extends AttributeConverter<?, ?>>> getConverters() {
+    return converters;
   }
 
   /** Returns the factory to create a new instance of persistentClass.
@@ -117,6 +149,18 @@ public class HibernateRegistry {
       return requestor.getBean(factoryType);
     }
     return null;
+  }
+
+  /** Indicates if the persistent class was registered with a factory.
+   *
+   * @param persistentClass to be verified. Cannot be null.
+   *
+   * @return true if the persistent class was registered with a factory,
+   * false otherwise.
+   */
+  boolean hasFactoryFor(final Class<?> persistentClass) {
+    Validate.notNull(persistentClass, "The PersistentClass cannot be null.");
+    return factories.containsKey(persistentClass);
   }
 
   /** Returns the prefix to use to create tables in the database that

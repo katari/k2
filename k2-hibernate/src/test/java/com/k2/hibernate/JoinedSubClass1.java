@@ -2,7 +2,7 @@
 
 package com.k2.hibernate;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 /** Sample entity to use in HibernateTest. */
 @Entity

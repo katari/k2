@@ -2,24 +2,30 @@
 
 package com.k2.hibernate;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 /** Sample entity to use in HibernateTest. */
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {
+    "this_is_a_long_attribute_name",
+    "value"})})
 public class Entity1 {
 
   /** The pk. */
@@ -27,6 +33,9 @@ public class Entity1 {
 
   /** a sample column. */
   private String value;
+
+  /** a sample with a very long name to test unique index key length. */
+  private String thisIsALongAttributeName;
 
   /** A sample element collection, to check generated fk names. */
   @ElementCollection
@@ -39,14 +48,19 @@ public class Entity1 {
 
   /** An embedded element to test component tuplizers. */
   @Embedded
-  @AttributeOverrides({
-    @AttributeOverride(name = "value", column = @Column(name = "value1_value"))
-  })
-  private Value1 value1 = null;
+  private Value1 attribute1 = null;
 
   /** A sample entity collection, to check generated fk names. */
+  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private List<Entity2> manyEntities = new ArrayList<>();
+
+  /** A sample entity collection, to check generated fk with long names. */
   @ManyToMany
-  private List<Entity2> entities = null;
+  private List<Entity2> thisIsAVeryLongAttributeNameToForceALongFkName = null;
+
+  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(foreignKey = @ForeignKey(name="fk_entity_1_one"))
+  private Entity2 oneEntity = null;
 
   /** A sample entity collection of a class hierarchy. */
   @OneToMany
@@ -81,8 +95,8 @@ public class Entity1 {
    *
    * @param aValue the value 1
    */
-  public void setValue1(final Value1 aValue) {
-    value1 = aValue;
+  public void setAttribute1(final Value1 aValue) {
+    attribute1 = aValue;
   }
 
   /** Obtains the list of values.
@@ -97,8 +111,32 @@ public class Entity1 {
    *
    * @return the value1 or null.
    */
-  public Value1 getValue1() {
-    return value1;
+  public Value1 getAttribute1() {
+    return attribute1;
+  }
+
+  /** Adds an Entity to the list of entities.
+   *
+   * @param entity to be added. Cannot be null.
+   */
+  public void addToManyEntities(final Entity2 entity) {
+    manyEntities.add(entity);
+  }
+
+  /** Gets the entities lazily hold by this entity.
+   *
+   * @return a list, never null.
+   */
+  public List<Entity2> getManyEntities() {
+    return manyEntities;
+  }
+
+  public void setOneEntity(final Entity2 theOneEntity) {
+    oneEntity = theOneEntity;
+  }
+
+  public Entity2 getOneEntity() {
+    return oneEntity;
   }
 
   /** Empty constructor. */

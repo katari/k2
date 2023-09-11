@@ -2,17 +2,6 @@
 
 package com.k2.core;
 
-import org.springframework.web.servlet.config.annotation
-    .ResourceHandlerRegistration;
-import org.springframework.web.servlet.config.annotation
-    .ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation
-    .WebMvcConfigurationSupport;
-import org.springframework.web.servlet.mvc.method.annotation
-    .RequestMappingHandlerAdapter;
-import org.springframework.web.servlet.mvc.method.annotation
-    .RequestMappingHandlerMapping;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +9,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support
-    .PropertySourcesPlaceholderConfigurer;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation
+  .ResourceHandlerRegistration;
+import org.springframework.web.servlet.config.annotation
+  .ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation
+  .WebMvcConfigurationSupport;
+import org.springframework.web.servlet.mvc.method.annotation
+  .RequestMappingHandlerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation
+  .RequestMappingHandlerMapping;
 
 /** Custom configuration for the dispatcher servlet application context
  *
@@ -85,8 +83,8 @@ public class DispatcherServletConfiguration extends WebMvcConfigurationSupport {
   @Bean
   public RequestMappingHandlerAdapter requestMappingHandlerAdapter(
       final List<HttpMessageConverter<?>> converters) {
-    RequestMappingHandlerAdapter adapter;
-    adapter = super.requestMappingHandlerAdapter();
+    RequestMappingHandlerAdapter adapter =
+      super.createRequestMappingHandlerAdapter();
 
     if (!converters.isEmpty()) {
       adapter.setMessageConverters(converters);

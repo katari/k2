@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.github.katari</groupId>
     <artifactId>k2-parent</artifactId>
-    <version>0.1.9-SNAPSHOT</version>
+    <version>0.1.13-SNAPSHOT</version>
     <relativePath>../k2-parent/pom.xml</relativePath>
   </parent>
 
@@ -73,8 +73,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
+      <groupId>org.hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!-- ++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -86,8 +87,8 @@
     </dependency>
 
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
 
     <dependency>

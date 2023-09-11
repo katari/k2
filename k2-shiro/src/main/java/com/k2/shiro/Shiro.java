@@ -5,7 +5,7 @@ package com.k2.shiro;
 import java.util.Map;
 import java.util.LinkedHashMap;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +123,7 @@ public class Shiro implements RegistryFactory {
    * @return a properly initialized shiro filter, set up to filter all
    * requests. Never returns null.
    */
-  @Bean public FilterRegistrationBean shiroFilter(
+  @Bean public FilterRegistrationBean<Filter> shiroFilter(
       final SecurityManager securityManager) {
     ShiroFilterFactoryBean filterFactory = new ShiroFilterFactoryBean();
     filterFactory.setSecurityManager(securityManager);
@@ -142,7 +142,8 @@ public class Shiro implements RegistryFactory {
       throw new RuntimeException("Error creating shiro filter.", e);
     }
 
-    FilterRegistrationBean registration = new FilterRegistrationBean(filter);
+    FilterRegistrationBean<Filter> registration;
+    registration = new FilterRegistrationBean<>(filter);
     registration.setName("shiroFilter");
     registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 

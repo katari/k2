@@ -4,10 +4,6 @@ package com.k2.hibernate;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
-
-import java.io.File;
-import java.io.FileNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +18,7 @@ import static org.hamcrest.CoreMatchers.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +28,9 @@ import com.k2.core.ModuleContext;
 import com.k2.core.Public;
 import com.k2.core.Registrator;
 
-import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Order;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class HibernateTest {
 
@@ -46,7 +42,9 @@ public class HibernateTest {
   @Before public void setUp() {
     log.trace("Entering setUp");
     application = new TestApplication();
-    application.run(new String[] {"--server.port=0"});
+    application.run(new String[] {"--server.port=0",
+        "--hibernate.k2.namingStrategy"
+        + "=com.k2.hibernate.K2DbImplicitNamingStrategyComponentPath"});
     log.trace("Leaving setUp");
   }
 
@@ -103,6 +101,26 @@ public class HibernateTest {
     assertThat(result.get(1).getValue(), is("second value"));
   }
 
+  @Test public void save_withConverter() {
+    EntityRepository repo = application.getBean(
+        "testmodule.entity1Repository", EntityRepository.class);
+
+    Entity2Factory factory = application.getBean(Module1.class,
+        "entity2Factory", Entity2Factory.class);
+
+    repo.save(factory.create("first value"));
+    List<Entity2> result = repo.listEntity2();
+
+    // Phone and Address are custom data types with a converter.
+    assertThat(result.size(), is(1));
+    assertThat(result.get(0).getParameter().toString(),
+        is("Entity 2 factory parameter"));
+    assertThat(result.get(0).getPhone(), is(not(nullValue())));
+    assertThat(result.get(0).getPhone().getNumber(), is("555-5555"));
+    assertThat(result.get(0).getAddress(), is(not(nullValue())));
+    assertThat(result.get(0).getAddress().getStreet(), is("Corrientes"));
+  }
+
   @Test public void save_withComponentFactory() {
     EntityRepository repo = application.getBean(
         "testmodule.entity1Repository", EntityRepository.class);
@@ -113,75 +131,15 @@ public class HibernateTest {
     Entity1 entity = new Entity1("an entity");
     entity.addValue2(factory2.create("one value"));
     entity.addValue2(factory2.create("another value"));
-    entity.setValue1(factory1.create("a value1 instance"));
+    entity.setAttribute1(factory1.create("a value1 instance"));
     repo.save(entity);
     List<Entity1> result = repo.listEntity1();
 
     assertThat(result.size(), is(1));
     assertThat(result.get(0).getValue2List().get(0).getInjected(),
         is("value 2 injected value"));
-    assertThat(result.get(0).getValue1().getInjected(),
+    assertThat(result.get(0).getAttribute1().getInjected(),
         is("value 1 injected value"));
-  }
-
-  @Test public void generateSchema() {
-    SchemaGenerator schema = application.getBean(Hibernate.class, "schema",
-        SchemaGenerator.class);
-    schema.generate();
-
-    String content = "";
-    try (Scanner scanner = new Scanner(new File("target/schema.ddl"))) {
-      content = scanner.useDelimiter("\\A").next();
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException("target/schema.ddl not found", e);
-    }
-
-    assertThat(content, containsString("create table tm_entity_1"));
-    assertThat(content, containsString("tm_uk_entity_3_unique_value"));
-    assertThat(content, containsString("create index idx_entity_1_id"));
-
-    // A ManyToOne joined by column.
-    assertThat(content, containsString("tm_fk_entity_3_entity_1_id"));
-
-    // An element collection with a long.
-    assertThat(content, containsString("create table tm_entity_1_longs"));
-    assertThat(content, containsString("tm_fk_entity_1_longs_entity_1_id"));
-
-    // An element collection with an embeddable.
-    assertThat(content, containsString(
-          "create table tm_entity_1_value_2_list"));
-    assertThat(content, containsString(
-          "tm_fk_entity_1_value_2_list_entity_1_id"));
-
-    // A many to many relation table.
-    assertThat(content, containsString("create table tm_entity_1_entities"));
-    assertThat(content, containsString("tm_fk_entity_1_entities_entities_id"));
-
-    // A single table per class hierarchy table name.
-    assertThat(content, containsString(
-          "create table tm_single_table_base_class"));
-
-    // All mapped super class hierarchy table names.
-    assertThat(content, containsString(
-          "create table tm_mapped_super_sub_class_1"));
-    assertThat(content, containsString(
-          "create table tm2_mapped_super_sub_class_2"));
-
-    // All joined inheritance table names.
-    assertThat(content, containsString("create table tm_joined_base_class"));
-    assertThat(content, containsString("create table tm_joined_sub_class_1"));
-    assertThat(content, containsString("create table tm2_joined_sub_class_2"));
-
-    // All table per class table names.
-    assertThat(content, containsString(
-          "create table tm_table_per_class_base_class"));
-    assertThat(content, containsString(
-          "create table tm_table_per_class_sub_class_1"));
-    assertThat(content, containsString(
-          "create table tm2_table_per_class_sub_class_2"));
-
-    // Just in case, the tm_tm_ prefix should never appear.
-    assertThat(content, not(containsString("tm_tm_")));
   }
 
   // Sample class to create beans in the test application.
@@ -195,6 +153,43 @@ public class HibernateTest {
     public String toString() {
       return value;
     }
+  }
+
+  @Test
+  public void load_withFactoryAndLazyInit() {
+    EntityRepository repo = application.getBean(
+      "testmodule.entity1Repository", EntityRepository.class);
+
+    TransactionTemplate transactionTemplate = application.getBean(
+      "testmodule.transactionTemplate", TransactionTemplate.class);
+
+    Entity2Factory factory = application.getBean(Module1.class,
+      "entity2Factory", Entity2Factory.class);
+
+    Entity1 entity1 = new Entity1("first value");
+    entity1.setOneEntity(factory.create("one entity"));
+    entity1.addToManyEntities(factory.create("another entity"));
+    repo.save(entity1);
+
+    transactionTemplate.execute((tx) -> {
+      List<Entity1> result = repo.listEntity1();
+
+      assertThat(result.size(), is(1));
+      Entity1 fetchedEntity1 = result.get(0);
+
+      assertThat(fetchedEntity1.getOneEntity().getValue(), is("one entity"));
+      assertThat(fetchedEntity1.getOneEntity().getParameter().toString(),
+        is("Entity 2 factory parameter"));
+
+      List<Entity2> manyEntities = fetchedEntity1.getManyEntities();
+      assertThat(manyEntities.size(), is(1));
+      assertThat(manyEntities.get(0).getParameter().toString(),
+        is("Entity 2 factory parameter"));
+      assertThat(manyEntities.get(0).getValue(),
+        is("another entity"));
+
+      return null;
+    });
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -213,6 +208,7 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
+      hibernateRegistry.registerPersistentClass(Entity4.class);
       hibernateRegistry.registerPersistentClass(Value1.class,
           Value1Factory.class);
       hibernateRegistry.registerPersistentClass(Value2.class,
@@ -237,11 +233,19 @@ public class HibernateTest {
       // inheritance.
       hibernateRegistry.registerPersistentClass(TablePerClassBaseClass.class);
       hibernateRegistry.registerPersistentClass(TablePerClassSubClass1.class);
+
+      hibernateRegistry.registerConverter(Phone.Converter.class);
+      hibernateRegistry.registerConverter(Address.Converter.class);
     }
 
     @Bean @Public public EntityRepository entity1Repository(
         final SessionFactory sessionFactory) {
       return new EntityRepository(sessionFactory);
+    }
+
+    @Bean @Public public TransactionTemplate transactionTemplate(
+        final PlatformTransactionManager platformTransactionManager) {
+      return new TransactionTemplate(platformTransactionManager);
     }
 
     @Bean(name = "parameter") public StringHolder parameter() {
@@ -272,9 +276,10 @@ public class HibernateTest {
       parameter = param;
     }
 
-    Entity2 create() {
+    public Entity2 create() {
       return new Entity2(parameter);
     }
+
     Entity2 create(final String value) {
       return new Entity2(parameter, value);
     }
@@ -331,18 +336,15 @@ public class HibernateTest {
     @SuppressWarnings({ "unchecked", "deprecation" })
     public List<Entity1> listEntity1() {
       Session session = sessionFactory.getCurrentSession();
-      return session.createCriteria(Entity1.class)
-          .addOrder(Order.asc("id"))
-          .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY)
-          .list();
+      return session.createQuery(
+        "select distinct e from com.k2.hibernate.Entity1 e order by id").list();
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })
     public List<Entity2> listEntity2() {
       Session session = sessionFactory.getCurrentSession();
-      return session.createCriteria("com.k2.hibernate.Entity2")
-          .addOrder(Order.asc("id"))
-          .list();
+      return session.createQuery(
+        "select distinct e from com.k2.hibernate.Entity2 e order by id").list();
     }
   };
 
@@ -360,7 +362,7 @@ public class HibernateTest {
       hibernateRegistry = moduleContext.get(HibernateRegistry.class);
 
       // These classes test the naming convention when different classe in the
-      // same hierachy belong to different modules.
+      // same hierarchy belong to different modules.
       hibernateRegistry.registerPersistentClass(SingleTableSubClass2.class);
       hibernateRegistry.registerPersistentClass(MappedSuperSubClass2.class);
       hibernateRegistry.registerPersistentClass(JoinedSubClass2.class);

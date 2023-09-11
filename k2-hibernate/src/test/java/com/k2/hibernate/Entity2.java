@@ -2,10 +2,10 @@
 
 package com.k2.hibernate;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 
 import com.k2.hibernate.HibernateTest.StringHolder;
 
@@ -21,6 +21,12 @@ public class Entity2 {
 
   /** a sample column. */
   private String value;
+
+  /** An attribute integrated through an AttributeConverter */
+  private Address address;
+
+  /** An attribute integrated through an AttributeConverter */
+  private Phone phone;
 
   /** The pk.
    *
@@ -46,6 +52,22 @@ public class Entity2 {
     return parameter;
   }
 
+  /** The address.
+   *
+   * @return the address.
+   */
+  public Address getAddress() {
+    return address;
+  }
+
+  /** The phone.
+   *
+   * @return the phone.
+   */
+  public Phone getPhone() {
+    return phone;
+  }
+
   /** Empty constructor with transients only.
    *
    * @param param a transient.
@@ -56,6 +78,8 @@ public class Entity2 {
 
   /** Constructor to initialize the value.
    *
+   * Initializes the address to Corrientes 2122 and the phone to 11-555-5555.
+   *
    * @param param a transient.
    *
    * @param theValue the value.
@@ -63,5 +87,13 @@ public class Entity2 {
   Entity2(final StringHolder param, final String theValue) {
     parameter = param;
     value = theValue;
+
+    address = new Address("Corrientes", "2122");
+    phone = new Phone("11", "555-5555");
+  }
+
+  /** Default constructor, required by hibernate when lazy-loading entities.
+   */
+  Entity2() {
   }
 }

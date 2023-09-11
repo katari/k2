@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 
 import org.apache.commons.lang3.Validate;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Controller;

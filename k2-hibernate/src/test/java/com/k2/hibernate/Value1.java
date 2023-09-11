@@ -2,9 +2,9 @@
 
 package com.k2.hibernate;
 
-import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
-import javax.persistence.Transient;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Transient;
 
 /** Sample value object to use in HibernateTest. */
 @Embeddable
@@ -18,7 +18,7 @@ public class Value1 {
 
   /** A sample nested embeddable. */
   @Embedded
-  private Value2 value2;
+  private Value2 attribute2;
 
   /** The value.
    *
@@ -53,6 +53,9 @@ public class Value1 {
   Value1(final String theInjected, final String theValue) {
     injected = theInjected;
     value = theValue;
+  }
+
+  public Value1() {
   }
 }
 

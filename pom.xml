@@ -7,7 +7,7 @@
 
   <groupId>com.github.katari</groupId>
   <artifactId>k2</artifactId>
-  <version>0.1.9-SNAPSHOT</version>
+  <version>0.1.13-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>K2 project aggregator</name>
@@ -107,6 +107,11 @@
       </build>
     </profile>
   </profiles>
+
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+  </properties>
   <!-- vim: set ts=2 et sw=2 ai: -->
 
 </project>
