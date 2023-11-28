@@ -16,8 +16,8 @@ import java.lang.annotation.ElementType;
  * attributes.
  *
  * For example, assume you have an @Entity with an embeddable attribute value1,
- * that has another attribute named value2. By default, or when using
- * @Prefix(value = "", skip = false), the
+ * that has another attribute named value2. By default, or when using {@literal
+ * @Prefix(value = "", skip = false)}, the
  * K2DbImplicitNamingStrategyComponentPath will create a column named
  * "value_1_value_2". When using @Prefix(skip = true), the same column will be
  * named "value_2" (without the value_1_ prefix). When using @Prefix("new"),

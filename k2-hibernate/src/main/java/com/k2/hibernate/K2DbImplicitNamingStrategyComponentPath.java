@@ -135,8 +135,8 @@ public class K2DbImplicitNamingStrategyComponentPath
     return Pair.of(false, "");
   }
 
-  /** Removes the collection_&&_element_ string in the name that appears due to
-   * ImplicitNamingStrategyComponentPathImpl.
+  /** Removes the collection_&amp;&amp;_element_ string in the name that
+   * appears due to ImplicitNamingStrategyComponentPathImpl.
    *
    * Related to HHH-6005.
    */
