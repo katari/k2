@@ -46,7 +46,9 @@ public class HibernateTest {
   @Before public void setUp() {
     log.trace("Entering setUp");
     application = new TestApplication();
-    application.run(new String[] {"--server.port=0"});
+    application.run(new String[] {"--server.port=0",
+        "--hibernate.k2.namingStrategy"
+        + "=com.k2.hibernate.K2DbImplicitNamingStrategyComponentPath"});
     log.trace("Leaving setUp");
   }
 
@@ -103,6 +105,26 @@ public class HibernateTest {
     assertThat(result.get(1).getValue(), is("second value"));
   }
 
+  @Test public void save_withConverter() {
+    EntityRepository repo = application.getBean(
+        "testmodule.entity1Repository", EntityRepository.class);
+
+    Entity2Factory factory = application.getBean(Module1.class,
+        "entity2Factory", Entity2Factory.class);
+
+    repo.save(factory.create("first value"));
+    List<Entity2> result = repo.listEntity2();
+
+    // Phone and Address are custom data types with a converter.
+    assertThat(result.size(), is(1));
+    assertThat(result.get(0).getParameter().toString(),
+        is("Entity 2 factory parameter"));
+    assertThat(result.get(0).getPhone(), is(not(nullValue())));
+    assertThat(result.get(0).getPhone().getNumber(), is("555-5555"));
+    assertThat(result.get(0).getAddress(), is(not(nullValue())));
+    assertThat(result.get(0).getAddress().getStreet(), is("Corrientes"));
+  }
+
   @Test public void save_withComponentFactory() {
     EntityRepository repo = application.getBean(
         "testmodule.entity1Repository", EntityRepository.class);
@@ -113,14 +135,14 @@ public class HibernateTest {
     Entity1 entity = new Entity1("an entity");
     entity.addValue2(factory2.create("one value"));
     entity.addValue2(factory2.create("another value"));
-    entity.setValue1(factory1.create("a value1 instance"));
+    entity.setAttribute1(factory1.create("a value1 instance"));
     repo.save(entity);
     List<Entity1> result = repo.listEntity1();
 
     assertThat(result.size(), is(1));
     assertThat(result.get(0).getValue2List().get(0).getInjected(),
         is("value 2 injected value"));
-    assertThat(result.get(0).getValue1().getInjected(),
+    assertThat(result.get(0).getAttribute1().getInjected(),
         is("value 1 injected value"));
   }
 
@@ -136,8 +158,10 @@ public class HibernateTest {
       throw new RuntimeException("target/schema.ddl not found", e);
     }
 
+    // Check the correct prefix for table and unique index.
     assertThat(content, containsString("create table tm_entity_1"));
     assertThat(content, containsString("tm_uk_entity_3_unique_value"));
+
     assertThat(content, containsString("create index idx_entity_1_id"));
 
     // A ManyToOne joined by column.
@@ -147,15 +171,54 @@ public class HibernateTest {
     assertThat(content, containsString("create table tm_entity_1_longs"));
     assertThat(content, containsString("tm_fk_entity_1_longs_entity_1_id"));
 
+    // Check the correct prefix for an embedded column.
+    assertThat(content, not(containsString("&&")));
+    // From Entity1, an embedable named value1.
+    assertThat(content, containsString(" attribute_1_value varchar"));
+    // From Entity1, an embedded with another embedded.
+    assertThat(content, containsString(
+        " attribute_1_attribute_2_value varchar"));
+
+    // From Entity4, an embedded without the attribute prefix,
+    // using @Prefix(skip = true).
+    assertThat(content, containsString(" value varchar"));
+    assertThat(content, containsString(" attribute_2_value varchar"));
+
+    // From Entity4, an embedded with a custom attribute prefix, using
+    // @Prefix("prefix").
+    assertThat(content, containsString(" prefix_value varchar"));
+    assertThat(content, containsString(" prefix_attribute_2_value varchar"));
+
+    // From Entity4, an embedded with a custom attribute prefix, using
+    // @Prefix.
+    assertThat(content, containsString(" attribute_3_value varchar"));
+
     // An element collection with an embeddable.
     assertThat(content, containsString(
           "create table tm_entity_1_value_2_list"));
     assertThat(content, containsString(
           "tm_fk_entity_1_value_2_list_entity_1_id"));
+    assertThat(content, containsString("value_2_list_value varchar"));
 
-    // A many to many relation table.
-    assertThat(content, containsString("create table tm_entity_1_entities"));
-    assertThat(content, containsString("tm_fk_entity_1_entities_entities_id"));
+    // A many to many relation table and fk.
+    assertThat(content, containsString(
+        "create table tm_entity_1_many_entities"));
+    assertThat(content, containsString(
+        "tm_fk_entity_1_many_entities_many_entities_id"));
+    assertThat(content, containsString(
+        "tm_fk_entity_1_many_entities_entity_1_id"));
+
+    // An fk with a hash based name, due to the length of the named fk.
+    assertThat(content, containsString(
+        "tm_fk_FKlddkpgwfnp7wlotpf0yqaljel"));
+
+    // A unique index with a hash based name, due to the length of the named
+    // index.
+    assertThat(content, containsString(
+        "tm_uk_UKeg4k8257gpcfnds92jccasn6b"));
+
+    // A one to many fk, specified with @ForeignKey.
+    assertThat(content, containsString("tm_fk_entity_1_one"));
 
     // A single table per class hierarchy table name.
     assertThat(content, containsString(
@@ -213,6 +276,7 @@ public class HibernateTest {
       hibernateRegistry.registerPersistentClass(Entity2.class,
           Entity2Factory.class);
       hibernateRegistry.registerPersistentClass(Entity3.class);
+      hibernateRegistry.registerPersistentClass(Entity4.class);
       hibernateRegistry.registerPersistentClass(Value1.class,
           Value1Factory.class);
       hibernateRegistry.registerPersistentClass(Value2.class,
@@ -237,6 +301,9 @@ public class HibernateTest {
       // inheritance.
       hibernateRegistry.registerPersistentClass(TablePerClassBaseClass.class);
       hibernateRegistry.registerPersistentClass(TablePerClassSubClass1.class);
+
+      hibernateRegistry.registerConverter(Phone.Converter.class);
+      hibernateRegistry.registerConverter(Address.Converter.class);
     }
 
     @Bean @Public public EntityRepository entity1Repository(

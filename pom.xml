@@ -7,7 +7,7 @@
 
   <groupId>com.github.katari</groupId>
   <artifactId>k2</artifactId>
-  <version>0.1.9-SNAPSHOT</version>
+  <version>0.1.14-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>K2 project aggregator</name>

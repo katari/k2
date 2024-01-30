@@ -2,8 +2,6 @@
 
 package com.k2.hibernate;
 
-import javax.persistence.Column;
-
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 
@@ -15,7 +13,6 @@ public class Value2 {
   @Transient private String injected;
 
   /** a sample column. */
-  @Column(name = "value_2")
   private String value;
 
   /** The value.

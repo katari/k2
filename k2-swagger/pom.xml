@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.github.katari</groupId>
     <artifactId>k2-parent</artifactId>
-    <version>0.1.9-SNAPSHOT</version>
+    <version>0.1.14-SNAPSHOT</version>
     <relativePath>../k2-parent/pom.xml</relativePath>
   </parent>
 
@@ -88,6 +88,16 @@
     <dependency>
       <groupId>org.webjars</groupId>
       <artifactId>swagger-ui</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
     </dependency>
 
     <dependency>

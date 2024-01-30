@@ -7,19 +7,23 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /** Sample entity to use in HibernateTest. */
 @Entity
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {
+    "this_is_a_very_long_attribute_name_to_force_a_long_unique_index_name",
+    "value"})})
 public class Entity1 {
 
   /** The pk. */
@@ -27,6 +31,9 @@ public class Entity1 {
 
   /** a sample column. */
   private String value;
+
+  /** a sample with a very long name to test unique index key length. */
+  private String thisIsAVeryLongAttributeNameToForceALongUniqueIndexName;
 
   /** A sample element collection, to check generated fk names. */
   @ElementCollection
@@ -39,14 +46,19 @@ public class Entity1 {
 
   /** An embedded element to test component tuplizers. */
   @Embedded
-  @AttributeOverrides({
-    @AttributeOverride(name = "value", column = @Column(name = "value1_value"))
-  })
-  private Value1 value1 = null;
+  private Value1 attribute1 = null;
 
   /** A sample entity collection, to check generated fk names. */
   @ManyToMany
-  private List<Entity2> entities = null;
+  private List<Entity2> manyEntities = null;
+
+  /** A sample entity collection, to check generated fk with long names. */
+  @ManyToMany
+  private List<Entity2> thisIsAVeryLongAttributeNameToForceALongFkName = null;
+
+  @ManyToOne
+  @JoinColumn(foreignKey = @ForeignKey(name="fk_entity_1_one"))
+  private Entity2 oneEntity = null;
 
   /** A sample entity collection of a class hierarchy. */
   @OneToMany
@@ -81,8 +93,8 @@ public class Entity1 {
    *
    * @param aValue the value 1
    */
-  public void setValue1(final Value1 aValue) {
-    value1 = aValue;
+  public void setAttribute1(final Value1 aValue) {
+    attribute1 = aValue;
   }
 
   /** Obtains the list of values.
@@ -97,8 +109,8 @@ public class Entity1 {
    *
    * @return the value1 or null.
    */
-  public Value1 getValue1() {
-    return value1;
+  public Value1 getAttribute1() {
+    return attribute1;
   }
 
   /** Empty constructor. */

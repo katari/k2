@@ -5,6 +5,9 @@ package com.k2.hibernate;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+
+import javax.persistence.AttributeConverter;
+
 import java.util.HashMap;
 
 import org.apache.commons.lang3.Validate;
@@ -56,8 +59,18 @@ public class HibernateRegistry {
    * for instantiating entities.
    *
    * Hibernate looks for an operation named 'create' with no arguments.
+   *
+   * This is never null.
    */
   private Map<Class<?>, Class<?>> factories = new HashMap<>();
+
+  /** The attribute converters that converts entity attribute state
+   * into the database column representation and back again.
+   *
+   * This is never null.
+   */
+  private List<Class<? extends AttributeConverter<?, ?>>> converters
+      = new LinkedList<>();
 
   /** Constructor, creates a hibernate registry.
    *
@@ -95,12 +108,32 @@ public class HibernateRegistry {
     factories.put(theClass, factory);
   }
 
+  /** Registers an attribute converter that converts entity attribute state
+   * into the database column representation and back again.
+   *
+   * See AttributeConverter on ways to use this feature.
+   *
+   * @param converter the converter to register. It cannot be null.
+   */
+  public void registerConverter(
+      final Class<? extends AttributeConverter<?, ?>> converter) {
+    converters.add(converter);
+  }
+
   /** Returns the list of persistent classes.
    *
    * @return the persistent classes, never returns null.
    */
   List<Class<?>> getPersistentClasses() {
     return persistentClasses;
+  }
+
+  /** Returns the list of converters.
+   *
+   * @return the converters, never returns null.
+   */
+  List<Class<? extends AttributeConverter<?, ?>>> getConverters() {
+    return converters;
   }
 
   /** Returns the factory to create a new instance of persistentClass.

@@ -5,6 +5,9 @@ package com.k2.hibernate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.AttributeConverter;
+
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -25,6 +28,7 @@ import org.hibernate.boot.MetadataBuilder;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.MetaAttribute;
@@ -69,11 +73,15 @@ import com.k2.core.Public;
  *
  * The module reads the following properties:
  *
- * hibernate.k2.usePrefix: if true, adds the module short name to each table
- * and foreign key name. Defaults to true.
+ * hibernate.k2.namingStrategy the fully qualified class name of the naming
+ * strategy to use. If null, it complies with the hibernate.k2.useK2Naming
+ * attribute.
  *
  * hibernate.k2.useK2Naming: if true, uses the k2 database naming convention:
  * all lower case, underscore separated.
+ *
+ * hibernate.k2.usePrefix: if true, adds the module short name to each table
+ * and foreign key name. Defaults to true.
  */
 @Component("hibernate")
 @PropertySource("classpath:/com/k2/hibernate/hibernate.properties")
@@ -122,8 +130,11 @@ public class Hibernate implements RegistryFactory {
    * @param environment the environment provided by k2 core, used by hibernate
    * to obtain its properties.
    *
+   * @param implicitNamingStrategy the fully qualified class name of the naming
+   * strategy to use. If null, it complies with the useK2Naming attribute.
+   *
    * @param useK2Naming true to use the k2 database naming conventions. False
-   * uses hibernate default.
+   * uses hibernate default. Ignored if implicitNamingStrategy is set.
    *
    * @param usePrefix true to add the module short name as a prefix to each
    * database object. Defaults to true.
@@ -134,6 +145,8 @@ public class Hibernate implements RegistryFactory {
    */
   @Bean public Metadata metadata(
       final K2Environment environment,
+      @Value("${hibernate.k2.namingStrategy:#{null}}")
+        final String implicitNamingStrategy,
       @Value("${hibernate.k2.useK2Naming:#{true}}") final boolean useK2Naming,
       @Value("${hibernate.k2.usePrefix:#{true}}") final boolean usePrefix,
       final DataSource dataSource) {
@@ -145,7 +158,8 @@ public class Hibernate implements RegistryFactory {
       .addService(this.getClass(), new HibernateRegistryLocator(registries))
       .build();
 
-    // Collects the entity prefixes from the hibernate registries.
+    // Collects the entity prefixes from the hibernate registries. This maps a
+    // fully qualified class name to the k2 module short name.
     Map<Class<?>, String> prefixes = new HashMap<>();
     MetadataSources metadataSources = new MetadataSources(registry);
     for (HibernateRegistry hibernateRegistry: registries) {
@@ -158,10 +172,30 @@ public class Hibernate implements RegistryFactory {
     // Builds the hibernate metadata.
     MetadataBuilder metadataBuilder = metadataSources.getMetadataBuilder()
         .enableNewIdentifierGeneratorSupport(false);
-    if (useK2Naming) {
+    if (implicitNamingStrategy != null) {
+      ImplicitNamingStrategy namingStrategy = null;
+      try {
+        Class<? extends ImplicitNamingStrategy> type;
+        type = Class.forName(implicitNamingStrategy)
+            .asSubclass(ImplicitNamingStrategy.class);
+        namingStrategy =  type.newInstance();
+      } catch (InstantiationException | IllegalAccessException
+          | ClassNotFoundException e) {
+        throw new RuntimeException(
+            "Error instantiating class " + implicitNamingStrategy, e);
+      }
+      metadataBuilder.applyImplicitNamingStrategy(namingStrategy);
+    } else if (useK2Naming) {
       metadataBuilder.applyImplicitNamingStrategy(
           new K2DbImplicitNamingStrategy());
     }
+    for (HibernateRegistry hibernateRegistry: registries) {
+      for (Class<? extends AttributeConverter<?, ?>> converter
+          : hibernateRegistry.getConverters()) {
+        metadataBuilder.applyAttributeConverter(converter, true);
+      }
+    }
+
     Metadata metadata = metadataBuilder.build();
 
     // This map contains the full list of tables and the prefix to add to their

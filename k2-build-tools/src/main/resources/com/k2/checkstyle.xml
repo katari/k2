@@ -170,11 +170,21 @@
     <module name="UpperEll"/>
     <module name="GenericWhitespace"/>
 
+    <!-- We do not allow any print to the console in the code. -->
     <module name="Regexp">
-      <!-- We do not allow any print to the console in the code. -->
       <property name="format" value="System\.out\.print"/>
       <property name="illegalPattern" value="true"/>
       <property name="ignoreComments" value="true"/>
+    </module>
+
+    <!-- Workaround for the LineLength rule that skips package and import
+         statements. See https://github.com/checkstyle/checkstyle/issues/9999
+    -->
+    <module name="Regexp">
+      <property name="format" value="^.{81,81}"/>
+      <property name="illegalPattern" value="true"/>
+      <property name="message"
+        value="Line length is longer than 80 characters."/>
     </module>
 
   </module>
